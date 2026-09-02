@@ -2,536 +2,993 @@
 <html lang="pl">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>CCNA 1 v7.0 – Ściąga Egzaminacyjna</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="theme-color" content="#121212">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Talerze">
+<title>Kalkulator talerzy</title>
 <style>
-  :root {
-    --bg: #0f1117;
-    --card: #1a1d26;
-    --card2: #1f2233;
-    --accent: #4f8ef7;
-    --green: #2ecc71;
-    --yellow: #f1c40f;
-    --red: #e74c3c;
-    --purple: #9b59b6;
-    --cyan: #1abc9c;
-    --text: #e0e6f0;
-    --muted: #8892a4;
-    --border: #2a2f45;
+  @font-face {
+    font-family: 'JetBrains Mono';
+    src: local('JetBrains Mono');
   }
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  body {
+
+  :root {
+    --bg: #121212;
+    --bg-raised: #1a1a1a;
+    --bg-card: #1e1e1e;
+    --line: #2c2c2c;
+    --text: #f2f0eb;
+    --text-dim: #8a8a8a;
+    --text-faint: #5a5a5a;
+    --accent: #e8542e;
+    --accent-dim: #7a2e1c;
+    --plate-25: #d13b3b;
+    --plate-20: #2b6fd1;
+    --plate-15: #d1b62b;
+    --plate-10: #2fa356;
+    --plate-5: #e8e6df;
+    --plate-2_5: #1a1a1a;
+    --plate-1_25: #8a8a8a;
+    --plate-0_5: #5a5a5a;
+    --plate-0_25: #3a3a3a;
+    --safe-top: env(safe-area-inset-top, 0px);
+    --safe-bottom: env(safe-area-inset-bottom, 0px);
+  }
+
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+  html, body {
+    margin: 0; padding: 0;
+    height: 100%;
     background: var(--bg);
     color: var(--text);
-    font-family: 'Segoe UI', system-ui, sans-serif;
-    font-size: 13px;
-    line-height: 1.5;
+    font-family: 'JetBrains Mono', 'SF Mono', Menlo, monospace;
+    overscroll-behavior: none;
+    user-select: none;
+    -webkit-user-select: none;
   }
 
+  #app {
+    height: 100dvh;
+    display: flex;
+    flex-direction: column;
+    padding-top: var(--safe-top);
+    padding-bottom: var(--safe-bottom);
+    overflow: hidden;
+  }
+
+  /* ---------- Header ---------- */
   header {
-    background: linear-gradient(135deg, #1a2a6c, #2980b9);
-    padding: 18px 24px 14px;
-    position: sticky; top: 0; z-index: 100;
-    box-shadow: 0 2px 12px #0008;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 20px 10px;
+    flex-shrink: 0;
   }
-  header h1 { font-size: 18px; font-weight: 700; letter-spacing: .5px; }
-  header p { font-size: 11px; color: #bcd; margin-top: 2px; }
 
-  #searchbar {
-    background: #fff1;
-    border: 1px solid #4f8ef755;
-    border-radius: 8px;
-    color: #fff;
-    padding: 7px 14px;
-    font-size: 13px;
-    width: 280px;
-    margin-top: 8px;
+  .brand {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  .brand .mark {
+    font-size: 11px;
+    letter-spacing: 0.18em;
+    color: var(--accent);
+    font-weight: 700;
+    text-transform: uppercase;
+  }
+
+  .brand .sub {
+    font-size: 11px;
+    color: var(--text-faint);
+    letter-spacing: 0.02em;
+  }
+
+  .icon-btn {
+    width: 38px; height: 38px;
+    border-radius: 10px;
+    background: var(--bg-raised);
+    border: 1px solid var(--line);
+    display: flex; align-items: center; justify-content: center;
+    color: var(--text-dim);
+  }
+  .icon-btn:active { background: var(--line); }
+
+  /* ---------- Tabs ---------- */
+  .tabs {
+    display: flex;
+    gap: 6px;
+    padding: 4px 20px 16px;
+    flex-shrink: 0;
+  }
+
+  .tab {
+    flex: 1;
+    text-align: center;
+    padding: 10px 8px;
+    border-radius: 10px;
+    font-size: 12px;
+    letter-spacing: 0.04em;
+    color: var(--text-faint);
+    border: 1px solid var(--line);
+    background: transparent;
+    font-family: inherit;
+    transition: color .15s, border-color .15s, background .15s;
+  }
+
+  .tab.active {
+    color: var(--bg);
+    background: var(--accent);
+    border-color: var(--accent);
+    font-weight: 700;
+  }
+
+  /* ---------- Scroll area ---------- */
+  .screens {
+    flex: 1;
+    overflow: hidden;
+    position: relative;
+  }
+
+  .screen {
+    position: absolute;
+    inset: 0;
+    overflow-y: auto;
+    padding: 0 20px 24px;
+    opacity: 0;
+    pointer-events: none;
+    transform: translateY(6px);
+    transition: opacity .18s ease, transform .18s ease;
+  }
+
+  .screen.active {
+    opacity: 1;
+    pointer-events: auto;
+    transform: translateY(0);
+  }
+
+  /* ---------- Barbell visualization ---------- */
+  .rig {
+    background: var(--bg-card);
+    border: 1px solid var(--line);
+    border-radius: 18px;
+    padding: 22px 16px 18px;
+    margin-bottom: 16px;
+  }
+
+  .rig-label {
+    font-size: 10px;
+    letter-spacing: 0.16em;
+    color: var(--text-faint);
+    text-transform: uppercase;
+    margin-bottom: 14px;
+  }
+
+  .barbell-wrap {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 130px;
+    overflow-x: auto;
+    overflow-y: hidden;
+    padding: 0 4px;
+  }
+
+  .barbell-wrap::-webkit-scrollbar { display: none; }
+
+  .barbell {
+    display: flex;
+    align-items: center;
+    flex-shrink: 0;
+  }
+
+  .plates-side {
+    display: flex;
+    flex-direction: row-reverse;
+    align-items: center;
+  }
+
+  .sleeve {
+    width: 34px;
+    height: 14px;
+    background: linear-gradient(180deg, #6a6a6a, #3a3a3a);
+    flex-shrink: 0;
+  }
+
+  .bar-shaft {
+    width: 38px;
+    height: 7px;
+    background: linear-gradient(180deg, #8a8a8a, #4a4a4a);
+    flex-shrink: 0;
+  }
+
+  .plate {
+    border-radius: 4px;
+    flex-shrink: 0;
+    margin: 0 1px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    animation: dropIn .28s cubic-bezier(.2,.9,.3,1.2) backwards;
+  }
+
+  .plate::after {
+    content: '';
+    position: absolute;
+    inset: 6px;
+    border-radius: 50%;
+    background: var(--bg);
+    opacity: 0.85;
+  }
+
+  @keyframes dropIn {
+    from { transform: translateY(-14px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+  }
+
+  .empty-rig {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: var(--text-faint);
+    font-size: 11px;
+  }
+
+  .weight-readout {
+    text-align: center;
+    margin-top: 16px;
+    padding-top: 14px;
+    border-top: 1px solid var(--line);
+  }
+
+  .weight-readout .num {
+    font-family: 'Inter', -apple-system, sans-serif;
+    font-size: 34px;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+  }
+
+  .weight-readout .unit {
+    font-size: 14px;
+    color: var(--text-dim);
+    margin-left: 4px;
+  }
+
+  .weight-readout .per-side {
+    font-size: 11px;
+    color: var(--text-faint);
+    margin-top: 3px;
+    letter-spacing: 0.02em;
+  }
+
+  /* ---------- Input card ---------- */
+  .card {
+    background: var(--bg-card);
+    border: 1px solid var(--line);
+    border-radius: 16px;
+    padding: 16px;
+    margin-bottom: 14px;
+  }
+
+  .field-label {
+    font-size: 10px;
+    letter-spacing: 0.14em;
+    color: var(--text-faint);
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+
+  .num-input {
+    width: 100%;
+    background: var(--bg-raised);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 14px 16px;
+    font-family: inherit;
+    font-size: 22px;
+    font-weight: 600;
+    color: var(--text);
     outline: none;
   }
-  #searchbar::placeholder { color: #89a; }
-  #searchbar:focus { border-color: var(--accent); }
 
-  .tabs {
-    display: flex; gap: 6px; padding: 12px 20px 0;
+  .num-input:focus { border-color: var(--accent); }
+
+  .num-input::placeholder { color: var(--text-faint); font-weight: 400; }
+
+  /* Hide native number spinners — desktop mouse affordance, not useful on touch */
+  .num-input::-webkit-outer-spin-button,
+  .num-input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+  .num-input[type=number] { -moz-appearance: textfield; }
+
+  .two-col {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+
+  /* ---------- Quick chips ---------- */
+  .chips {
+    display: flex;
+    gap: 8px;
+    margin-top: 10px;
     flex-wrap: wrap;
-    background: var(--card);
-    border-bottom: 1px solid var(--border);
   }
-  .tab {
-    padding: 6px 14px; border-radius: 8px 8px 0 0;
-    cursor: pointer; font-size: 12px; font-weight: 600;
-    color: var(--muted); border: 1px solid transparent;
-    border-bottom: none; transition: .15s;
-  }
-  .tab:hover { color: var(--text); background: #ffffff10; }
-  .tab.active { background: var(--bg); color: var(--accent); border-color: var(--border); }
 
-  .section { display: none; padding: 16px 20px; }
-  .section.active { display: block; }
-
-  /* Q&A cards */
-  .qa-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
-    gap: 10px;
-  }
-  .qa {
-    background: var(--card);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    padding: 10px 12px;
-    transition: border-color .15s;
-  }
-  .qa:hover { border-color: var(--accent); }
-  .qa-q {
-    color: var(--muted);
-    font-size: 11.5px;
-    margin-bottom: 5px;
-    line-height: 1.4;
-  }
-  .qa-q .qnum {
-    display: inline-block;
-    background: var(--accent);
-    color: #fff;
-    font-weight: 700;
-    font-size: 10px;
-    border-radius: 4px;
-    padding: 1px 5px;
-    margin-right: 5px;
-  }
-  .qa-a {
-    font-weight: 700;
-    font-size: 13px;
-    color: var(--green);
-  }
-  .qa-a.multi { color: var(--cyan); }
-  .qa-a.port  { color: var(--yellow); }
-  .qa-a.mask  { color: #ff9f43; }
-  .qa-a.cmd   { color: #a29bfe; font-family: monospace; }
-
-  .hidden { display: none !important; }
-
-  /* Port table */
-  table { width: 100%; border-collapse: collapse; margin-top: 6px; }
-  th {
-    background: #2a2f45;
-    color: var(--accent);
-    padding: 7px 12px;
-    text-align: left;
-    font-size: 11px;
-    text-transform: uppercase;
-    letter-spacing: .5px;
-  }
-  td { padding: 6px 12px; border-bottom: 1px solid var(--border); font-size: 12.5px; }
-  tr:hover td { background: #ffffff06; }
-  .badge {
-    display: inline-block;
-    padding: 2px 8px;
+  .chip {
+    padding: 7px 13px;
     border-radius: 20px;
-    font-size: 11px;
+    background: var(--bg-raised);
+    border: 1px solid var(--line);
+    color: var(--text-dim);
+    font-size: 12px;
+    font-family: inherit;
+  }
+  .chip:active { background: var(--line); }
+
+  /* ---------- Buttons ---------- */
+  .btn-primary {
+    width: 100%;
+    padding: 16px;
+    border-radius: 14px;
+    background: var(--accent);
+    color: #121212;
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    border: none;
+    margin-top: 4px;
+  }
+  .btn-primary:active { background: #c94623; }
+  .btn-primary:disabled { background: var(--line); color: var(--text-faint); }
+
+  .btn-row {
+    display: flex;
+    gap: 10px;
+    margin-top: 10px;
+  }
+
+  .btn-secondary {
+    flex: 1;
+    padding: 13px;
+    border-radius: 12px;
+    background: transparent;
+    border: 1px solid var(--line);
+    color: var(--text-dim);
+    font-family: inherit;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+  .btn-secondary:active { background: var(--bg-raised); }
+  .btn-secondary.warn { color: var(--accent); border-color: var(--accent-dim); }
+
+  /* ---------- Result / plate list ---------- */
+  .plate-list {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin-top: 12px;
+  }
+
+  .plate-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 12px;
+    background: var(--bg-raised);
+    border-radius: 10px;
+  }
+
+  .plate-row .swatch-label {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 13px;
+  }
+
+  .swatch {
+    width: 16px; height: 16px;
+    border-radius: 4px;
+    flex-shrink: 0;
+  }
+
+  .plate-row .count {
+    font-size: 13px;
+    color: var(--text-dim);
+  }
+
+  .msg {
+    font-size: 12px;
+    color: var(--text-dim);
+    line-height: 1.5;
+    padding: 12px 0 2px;
+  }
+  .msg.error { color: var(--accent); }
+
+  /* ---------- History ---------- */
+  .history-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 14px;
+    background: var(--bg-card);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    margin-bottom: 8px;
+  }
+
+  .history-item .h-main {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  .history-item .h-weight {
+    font-size: 16px;
     font-weight: 700;
   }
-  .b-tcp { background: #1a4a8a44; color: #5ba3ff; border: 1px solid #1a4a8a; }
-  .b-udp { background: #8a1a3a44; color: #ff5b8a; border: 1px solid #8a1a3a; }
-  .b-both { background: #1a8a4a44; color: #5bff9b; border: 1px solid #1a8a4a; }
 
-  /* Subnet table */
-  .subnet-row-host { color: var(--yellow); font-weight: 700; }
-  .subnet-row-cidr { color: var(--cyan); }
-  .subnet-row-mask { color: #ff9f43; }
+  .history-item .h-detail {
+    font-size: 11px;
+    color: var(--text-faint);
+  }
 
-  /* Quick ref boxes */
-  .ref-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-    gap: 10px;
+  .history-item .h-time {
+    font-size: 10px;
+    color: var(--text-faint);
+    text-align: right;
   }
-  .ref-box {
-    background: var(--card);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    padding: 12px 14px;
-  }
-  .ref-box h3 {
+
+  .empty-state {
+    text-align: center;
+    padding: 40px 20px;
+    color: var(--text-faint);
     font-size: 12px;
+    line-height: 1.6;
+  }
+
+  .section-title {
+    font-size: 10px;
+    letter-spacing: 0.14em;
+    color: var(--text-faint);
     text-transform: uppercase;
-    letter-spacing: .5px;
-    color: var(--accent);
-    margin-bottom: 8px;
-    padding-bottom: 6px;
-    border-bottom: 1px solid var(--border);
+    margin: 20px 0 10px;
   }
-  .ref-item {
-    display: flex; justify-content: space-between;
-    padding: 4px 0;
-    border-bottom: 1px solid #ffffff08;
-    font-size: 12px;
-  }
-  .ref-item:last-child { border-bottom: none; }
-  .ref-key { color: var(--muted); }
-  .ref-val { color: var(--text); font-weight: 600; text-align: right; }
-  .ref-val.g { color: var(--green); }
-  .ref-val.y { color: var(--yellow); }
-  .ref-val.c { color: var(--cyan); }
-  .ref-val.p { color: var(--purple); }
-  .ref-val.r { color: var(--red); }
+  .section-title:first-child { margin-top: 4px; }
 
-  .results-count {
-    font-size: 11px; color: var(--muted);
-    padding: 6px 0 4px;
+  /* Legend */
+  .legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 14px;
+    padding-top: 4px;
+  }
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 10px;
+    color: var(--text-faint);
   }
 
-  @media (max-width: 600px) {
-    .qa-grid { grid-template-columns: 1fr; }
-    .ref-grid { grid-template-columns: 1fr; }
-    #searchbar { width: 100%; }
+  /* Toast */
+  .toast {
+    position: fixed;
+    left: 20px; right: 20px;
+    bottom: calc(24px + var(--safe-bottom));
+    background: var(--text);
+    color: var(--bg);
+    padding: 13px 18px;
+    border-radius: 12px;
+    font-size: 13px;
+    font-weight: 600;
+    text-align: center;
+    transform: translateY(120px);
+    opacity: 0;
+    transition: transform .25s cubic-bezier(.2,.9,.3,1.1), opacity .25s;
+    z-index: 50;
+    pointer-events: none;
   }
+  .toast.show { transform: translateY(0); opacity: 1; }
+
+  /* Info sheet */
+  .sheet-backdrop {
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0.55);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity .2s;
+    z-index: 60;
+  }
+  .sheet-backdrop.show { opacity: 1; pointer-events: auto; }
+
+  .sheet {
+    position: fixed;
+    left: 0; right: 0; bottom: 0;
+    background: var(--bg-card);
+    border-top: 1px solid var(--line);
+    border-radius: 20px 20px 0 0;
+    padding: 8px 20px calc(28px + var(--safe-bottom));
+    transform: translateY(100%);
+    transition: transform .28s cubic-bezier(.2,.9,.3,1.05);
+    z-index: 61;
+  }
+  .sheet.show { transform: translateY(0); }
+
+  .sheet-handle {
+    width: 36px; height: 4px;
+    background: var(--line);
+    border-radius: 2px;
+    margin: 10px auto 18px;
+  }
+
+  .sheet h3 { font-size: 15px; margin: 0 0 4px; }
+  .sheet p { font-size: 12.5px; color: var(--text-dim); line-height: 1.6; margin: 0 0 14px; }
+  .sheet a { color: var(--accent); text-decoration: none; }
+
+  ::-webkit-scrollbar { width: 0; }
 </style>
 </head>
 <body>
 
-<header>
-  <h1>📡 CCNA 1 v7.0 – Ściąga Egzaminacyjna</h1>
-  <p>Introduction to Networks (ITN) · 60 pytań · 70% zaliczenie · 1h 15min</p>
-  <input id="searchbar" type="text" placeholder="🔍 Szukaj pytania lub odpowiedzi…" oninput="filterQA()">
-</header>
+<div id="app">
 
-<div class="tabs">
-  <div class="tab active" onclick="showTab('all')">📋 Wszystkie pytania</div>
-  <div class="tab" onclick="showTab('ports')">🔌 Porty TCP/UDP</div>
-  <div class="tab" onclick="showTab('subnets')">🔢 Maski podsieci</div>
-  <div class="tab" onclick="showTab('quickref')">⚡ Quick Reference</div>
-</div>
+  <header>
+    <div class="brand">
+      <div class="mark">Talerze</div>
+      <div class="sub">kalkulator obciążenia sztangi</div>
+    </div>
+    <button class="icon-btn" id="infoBtn" aria-label="Informacje">
+      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 16v-5"/><circle cx="12" cy="8.2" r="0.3" fill="currentColor" stroke-width="1.2"/></svg>
+    </button>
+  </header>
 
-<!-- ===== ALL QA ===== -->
-<div id="tab-all" class="section active">
-  <div class="results-count" id="count"></div>
-  <div class="qa-grid" id="qa-container"></div>
-</div>
-
-<!-- ===== PORTS ===== -->
-<div id="tab-ports" class="section">
-  <table>
-    <tr><th>Port</th><th>Protokół</th><th>Usługa</th><th>Transport</th></tr>
-    <tr><td class="subnet-row-host">20</td><td>FTP Data</td><td>Przesyłanie danych pliku</td><td><span class="badge b-tcp">TCP</span></td></tr>
-    <tr><td class="subnet-row-host">21</td><td>FTP Control</td><td>Sterowanie transferem pliku</td><td><span class="badge b-tcp">TCP</span></td></tr>
-    <tr><td class="subnet-row-host">22</td><td>SSH</td><td>Bezpieczny zdalny dostęp CLI</td><td><span class="badge b-tcp">TCP</span></td></tr>
-    <tr><td class="subnet-row-host">23</td><td>Telnet</td><td>Zdalny dostęp CLI (nieszyfrowany)</td><td><span class="badge b-tcp">TCP</span></td></tr>
-    <tr><td class="subnet-row-host">25</td><td>SMTP</td><td>Wysyłanie poczty e-mail</td><td><span class="badge b-tcp">TCP</span></td></tr>
-    <tr><td class="subnet-row-host">53</td><td>DNS</td><td>Rozwiązywanie nazw domen</td><td><span class="badge b-both">TCP/UDP</span></td></tr>
-    <tr><td class="subnet-row-host">67</td><td>DHCP Server</td><td>Automatyczne przydzielanie IP</td><td><span class="badge b-udp">UDP</span></td></tr>
-    <tr><td class="subnet-row-host">68</td><td>DHCP Client</td><td>Odbiór konfiguracji od serwera</td><td><span class="badge b-udp">UDP</span></td></tr>
-    <tr><td class="subnet-row-host">69</td><td>TFTP</td><td>Prosty transfer pliku (bez potwierdzenia)</td><td><span class="badge b-udp">UDP</span></td></tr>
-    <tr><td class="subnet-row-host">80</td><td>HTTP</td><td>Przeglądanie stron www</td><td><span class="badge b-tcp">TCP</span></td></tr>
-    <tr><td class="subnet-row-host">110</td><td>POP3</td><td>Pobieranie e-mail (usuwa z serwera)</td><td><span class="badge b-tcp">TCP</span></td></tr>
-    <tr><td class="subnet-row-host">143</td><td>IMAP</td><td>Dostęp do e-mail (zostaje na serwerze)</td><td><span class="badge b-tcp">TCP</span></td></tr>
-    <tr><td class="subnet-row-host">443</td><td>HTTPS</td><td>Bezpieczne strony www (TLS/SSL)</td><td><span class="badge b-tcp">TCP</span></td></tr>
-  </table>
-</div>
-
-<!-- ===== SUBNETS ===== -->
-<div id="tab-subnets" class="section">
-  <table>
-    <tr><th>Prefiks</th><th>Maska</th><th>Hosty</th><th>Użyteczne hosty</th><th>Przykład użycia</th></tr>
-    <tr>
-      <td class="subnet-row-cidr">/24</td>
-      <td class="subnet-row-mask">255.255.255.0</td>
-      <td>256</td><td class="subnet-row-host">254</td><td>do 200 urządzeń</td>
-    </tr>
-    <tr>
-      <td class="subnet-row-cidr">/25</td>
-      <td class="subnet-row-mask">255.255.255.128</td>
-      <td>128</td><td class="subnet-row-host">126</td><td>do 90 urządzeń</td>
-    </tr>
-    <tr>
-      <td class="subnet-row-cidr">/26</td>
-      <td class="subnet-row-mask">255.255.255.192</td>
-      <td>64</td><td class="subnet-row-host">62</td><td>do 61 urządzeń</td>
-    </tr>
-    <tr>
-      <td class="subnet-row-cidr">/27</td>
-      <td class="subnet-row-mask">255.255.255.224</td>
-      <td>32</td><td class="subnet-row-host">30</td><td>do 25 urządzeń</td>
-    </tr>
-    <tr>
-      <td class="subnet-row-cidr">/28</td>
-      <td class="subnet-row-mask">255.255.255.240</td>
-      <td>16</td><td class="subnet-row-host">14</td><td>do 10 urządzeń</td>
-    </tr>
-    <tr>
-      <td class="subnet-row-cidr">/29</td>
-      <td class="subnet-row-mask">255.255.255.248</td>
-      <td>8</td><td class="subnet-row-host">6</td><td>do 4–6 urządzeń</td>
-    </tr>
-    <tr>
-      <td class="subnet-row-cidr">/30</td>
-      <td class="subnet-row-mask">255.255.255.252</td>
-      <td>4</td><td class="subnet-row-host">2</td><td>połączenia WAN punkt-punkt</td>
-    </tr>
-  </table>
-  <div style="margin-top:14px; background:var(--card); border-radius:8px; padding:12px 14px; border:1px solid var(--border);">
-    <p style="color:var(--accent); font-weight:700; margin-bottom:6px;">📐 Wzór na użyteczne hosty</p>
-    <p style="font-family:monospace; font-size:14px; color:var(--yellow);">Hosty = 2<sup>n</sup> − 2</p>
-    <p style="color:var(--muted); font-size:11px; margin-top:4px;">gdzie <b>n</b> = liczba bitów hostowych (bity ustawione na 0 w masce)</p>
-    <p style="margin-top:8px; color:var(--muted); font-size:11px;">192.168.1.64/26 → hosty od <b>.65</b> do <b>.126</b>, broadcast <b>.127</b></p>
+  <div class="tabs">
+    <button class="tab active" data-tab="plates">Talerze</button>
+    <button class="tab" data-tab="orm">One Rep Max</button>
+    <button class="tab" data-tab="history">Historia</button>
   </div>
-</div>
 
-<!-- ===== QUICK REF ===== -->
-<div id="tab-quickref" class="section">
-  <div class="ref-grid">
+  <div class="screens">
 
-    <div class="ref-box">
-      <h3>🌐 Modele sieciowe</h3>
-      <div class="ref-item"><span class="ref-key">TCP/IP – 4 warstwy</span><span class="ref-val c">App · Transport · Internet · Network Access</span></div>
-      <div class="ref-item"><span class="ref-key">OSI – 7 warstw</span><span class="ref-val">App · Pres · Session · Transport · Network · Data Link · Physical</span></div>
-      <div class="ref-item"><span class="ref-key">OSI 5-6-7 → TCP/IP</span><span class="ref-val g">Warstwa Application</span></div>
-      <div class="ref-item"><span class="ref-key">Warstwa routingu IP</span><span class="ref-val y">Internet (TCP/IP) = Network (OSI)</span></div>
+    <!-- ===================== PLATES SCREEN ===================== -->
+    <div class="screen active" id="screen-plates">
+
+      <div class="rig">
+        <div class="rig-label">Podgląd sztangi</div>
+        <div class="barbell-wrap" id="barbellWrap">
+          <div class="empty-rig" id="emptyRig">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="12" r="9"/><path d="M8 12h8"/></svg>
+            <span>Wpisz ciężar, aby zobaczyć obciążenie</span>
+          </div>
+          <div class="barbell" id="barbell" style="display:none"></div>
+        </div>
+        <div class="weight-readout" id="readout" style="display:none">
+          <div><span class="num" id="readoutNum">0</span><span class="unit">kg</span></div>
+          <div class="per-side" id="readoutPerSide"></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="field-label">Ciężar całkowity (kg)</div>
+        <input type="number" inputmode="decimal" class="num-input" id="plateInput" placeholder="np. 100" min="20" max="700" step="0.5">
+        <div class="chips">
+          <button class="chip" data-add-weight="60">60</button>
+          <button class="chip" data-add-weight="100">100</button>
+          <button class="chip" data-add-weight="140">140</button>
+          <button class="chip" data-add-weight="180">180</button>
+        </div>
+      </div>
+
+      <div id="plateResultWrap"></div>
+
+      <div class="btn-row">
+        <button class="btn-secondary" id="savePlateBtn">Zapisz wynik</button>
+        <button class="btn-secondary warn" id="clearPlateBtn">Wyczyść</button>
+      </div>
+
+      <div class="section-title">Legenda talerzy</div>
+      <div class="legend" id="legend"></div>
+
     </div>
 
-    <div class="ref-box">
-      <h3>🔒 Bezpieczeństwo – typy zagrożeń</h3>
-      <div class="ref-item"><span class="ref-key">Virus / Trojan horse</span><span class="ref-val">Malicious code on end device</span></div>
-      <div class="ref-item"><span class="ref-key">DoS</span><span class="ref-val r">Slows or crashes device/service</span></div>
-      <div class="ref-item"><span class="ref-key">Spyware / Adware</span><span class="ref-val">Collects info about user</span></div>
-      <div class="ref-item"><span class="ref-key">Identity theft</span><span class="ref-val">Use of stolen credentials</span></div>
-      <div class="ref-item"><span class="ref-key">Reconnaissance</span><span class="ref-val">Unauthorized info gathering</span></div>
-      <div class="ref-item"><span class="ref-key">AAA – Authorization</span><span class="ref-val g">Co user może robić po logowaniu</span></div>
+    <!-- ===================== ORM SCREEN ===================== -->
+    <div class="screen" id="screen-orm">
+
+      <div class="rig">
+        <div class="rig-label">Szacowany maksymalny ciężar (1RM)</div>
+        <div class="weight-readout" style="border-top:none; padding-top:2px; margin-top:2px;">
+          <div><span class="num" id="ormNum">—</span><span class="unit" id="ormUnit"></span></div>
+          <div class="per-side" id="ormSub">Wpisz ciężar i liczbę powtórzeń</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="two-col">
+          <div>
+            <div class="field-label">Ciężar (kg)</div>
+            <input type="number" inputmode="decimal" class="num-input" id="ormWeightInput" placeholder="80">
+          </div>
+          <div>
+            <div class="field-label">Powtórzenia</div>
+            <input type="number" inputmode="numeric" class="num-input" id="ormRepsInput" placeholder="5">
+          </div>
+        </div>
+      </div>
+
+      <div class="btn-row">
+        <button class="btn-secondary" id="saveOrmBtn">Zapisz wynik</button>
+        <button class="btn-secondary warn" id="clearOrmBtn">Wyczyść</button>
+      </div>
+
+      <div class="msg">Średnia z trzech wzorów: Brzycki, Epley, O'Conner. Szacunek — traktuj jako punkt odniesienia, nie gwarancję.</div>
+
     </div>
 
-    <div class="ref-box">
-      <h3>⚙️ Komendy IOS</h3>
-      <div class="ref-item"><span class="ref-key">Tryb user EXEC</span><span class="ref-val c">Router&gt;</span></div>
-      <div class="ref-item"><span class="ref-key">Tryb privileged EXEC</span><span class="ref-val c">Router#  (enable)</span></div>
-      <div class="ref-item"><span class="ref-key">Tryb global config</span><span class="ref-val c">Router(config)#  (conf t)</span></div>
-      <div class="ref-item"><span class="ref-key">IP config Windows</span><span class="ref-val p">ipconfig / ipconfig /all</span></div>
-      <div class="ref-item"><span class="ref-key">ARP table Windows</span><span class="ref-val p">arp -a</span></div>
-      <div class="ref-item"><span class="ref-key">DNS resolve</span><span class="ref-val p">nslookup</span></div>
-      <div class="ref-item"><span class="ref-key">Test trasy</span><span class="ref-val p">tracert (Windows) / traceroute</span></div>
-      <div class="ref-item"><span class="ref-key">Encrypt passwords</span><span class="ref-val p">service password-encryption</span></div>
-      <div class="ref-item"><span class="ref-key">IPv6 routing ON</span><span class="ref-val p">ipv6 unicast-routing</span></div>
-      <div class="ref-item"><span class="ref-key">Tylko SSH na vty</span><span class="ref-val p">transport input ssh</span></div>
-      <div class="ref-item"><span class="ref-key">Default-gateway switch</span><span class="ref-val p">ip default-gateway &lt;IP&gt;</span></div>
-      <div class="ref-item"><span class="ref-key">Test bannera</span><span class="ref-val p">exit + Enter z priv EXEC</span></div>
-    </div>
-
-    <div class="ref-box">
-      <h3>📶 Przełączanie (Switching)</h3>
-      <div class="ref-item"><span class="ref-key">Store-and-forward</span><span class="ref-val g">Sprawdza CRC, odrzuca błędne</span></div>
-      <div class="ref-item"><span class="ref-key">Cut-through</span><span class="ref-val y">Niskie opóźnienie, może przesyłać runt frames</span></div>
-      <div class="ref-item"><span class="ref-key">Po przekroczeniu progu błędów</span><span class="ref-val">Przełącza się na store-and-forward</span></div>
-      <div class="ref-item"><span class="ref-key">CSMA/CA</span><span class="ref-val c">Bezprzewodowy dostęp do medium (Wi-Fi)</span></div>
-      <div class="ref-item"><span class="ref-key">CSMA/CD</span><span class="ref-val">Przewodowy Ethernet (legacy)</span></div>
-      <div class="ref-item"><span class="ref-key">LLC sublayer</span><span class="ref-val">Identyfikuje protokół warstwy 3</span></div>
-      <div class="ref-item"><span class="ref-key">MAC sublayer</span><span class="ref-val">Ramkowanie, FCS, dostęp do medium</span></div>
-      <div class="ref-item"><span class="ref-key">FCS (Frame Check Sequence)</span><span class="ref-val r">Wykrywanie błędów w ramce</span></div>
-    </div>
-
-    <div class="ref-box">
-      <h3>🌍 IPv6 – kluczowe fakty</h3>
-      <div class="ref-item"><span class="ref-key">Link-local prefix</span><span class="ref-val y">FE80::/10</span></div>
-      <div class="ref-item"><span class="ref-key">Multicast – wszyscy routery</span><span class="ref-val c">FF02::2</span></div>
-      <div class="ref-item"><span class="ref-key">Multicast – wszystkie węzły</span><span class="ref-val c">FF02::1</span></div>
-      <div class="ref-item"><span class="ref-key">Budowa adresu global unicast</span><span class="ref-val">Global prefix / Subnet ID / Interface ID</span></div>
-      <div class="ref-item"><span class="ref-key">EUI-64 krok 1</span><span class="ref-val">7. bit MAC: 0→1 (hex: C→E)</span></div>
-      <div class="ref-item"><span class="ref-key">EUI-64 krok 2</span><span class="ref-val">Wstaw FFFE w środek MAC</span></div>
-      <div class="ref-item"><span class="ref-key">Neighbor Solicitation</span><span class="ref-val g">Tylko ICMPv6 (nie w ICMPv4)</span></div>
-      <div class="ref-item"><span class="ref-key">Router Advertisement</span><span class="ref-val g">Tylko ICMPv6 (nie w ICMPv4)</span></div>
-      <div class="ref-item"><span class="ref-key">NAT dla IPv4</span><span class="ref-val">Spowalnia wyczerpanie adresów, problem z E2E</span></div>
-    </div>
-
-    <div class="ref-box">
-      <h3>📡 Bezprzewodowe i okablowanie</h3>
-      <div class="ref-item"><span class="ref-key">ZigBee</span><span class="ref-val g">IoT/home automation, niskie zużycie energii</span></div>
-      <div class="ref-item"><span class="ref-key">Atenuacja</span><span class="ref-val">Utrata siły sygnału wraz z odległością</span></div>
-      <div class="ref-item"><span class="ref-key">EMI / RFI</span><span class="ref-val r">Zakłócenia kabla miedzianego (fl. lampy, silniki)</span></div>
-      <div class="ref-item"><span class="ref-key">Crosstalk – ochrona UTP</span><span class="ref-val y">Skręcanie par przewodów</span></div>
-      <div class="ref-item"><span class="ref-key">Typowe problemy UTP</span><span class="ref-val">Złe zakończenie, słaba jakość kabla/złącz</span></div>
-      <div class="ref-item"><span class="ref-key">Standardy kabli (TIA/EIA)</span><span class="ref-val c">Długość, typ złącza, pinout</span></div>
-      <div class="ref-item"><span class="ref-key">Zagrożenia bezprzewodowe</span><span class="ref-val">Interferencje, bezpieczeństwo, zasięg</span></div>
-    </div>
-
-    <div class="ref-box">
-      <h3>📬 ARP – jak działa</h3>
-      <div class="ref-item"><span class="ref-key">Cel na tej samej sieci</span><span class="ref-val">ARP request → MAC urządzenia docelowego</span></div>
-      <div class="ref-item"><span class="ref-key">Cel na zdalnej sieci</span><span class="ref-val g">ARP request → MAC domyślnej bramy!</span></div>
-      <div class="ref-item"><span class="ref-key">ARP request</span><span class="ref-val">Broadcast do całej podsieci</span></div>
-      <div class="ref-item"><span class="ref-key">ARP reply</span><span class="ref-val">Unicast od właściciela IP</span></div>
-      <div class="ref-item"><span class="ref-key">Brak odpowiedzi ARP</span><span class="ref-val r">Ramka nie jest tworzona, pakiet odrzucany</span></div>
-      <div class="ref-item"><span class="ref-key">arp -a (Windows)</span><span class="ref-val p">Wyświetla tabelę ARP</span></div>
-    </div>
-
-    <div class="ref-box">
-      <h3>🚀 TCP vs UDP</h3>
-      <div class="ref-item"><span class="ref-key">Wspólne cechy</span><span class="ref-val c">Numery portów, suma kontrolna (checksum)</span></div>
-      <div class="ref-item"><span class="ref-key">TCP – 3-way handshake</span><span class="ref-val">SYN → SYN-ACK → ACK</span></div>
-      <div class="ref-item"><span class="ref-key">TCP sliding window</span><span class="ref-val y">Zmniejsza prędkość nadawcy</span></div>
-      <div class="ref-item"><span class="ref-key">RTP używa</span><span class="ref-val g">Voice + Video (real-time)</span></div>
-      <div class="ref-item"><span class="ref-key">IP – cechy</span><span class="ref-val">Bezpołączeniowy, best-effort, niezależny od medium</span></div>
-      <div class="ref-item"><span class="ref-key">TTL wygasło</span><span class="ref-val r">Router -1 TTL; jeśli 0 → odrzuca + Time Exceeded ICMP</span></div>
-    </div>
-
-    <div class="ref-box">
-      <h3>🔑 SSH – konfiguracja</h3>
-      <div class="ref-item"><span class="ref-key">Krok 1</span><span class="ref-val p">ip domain-name &lt;domena&gt;</span></div>
-      <div class="ref-item"><span class="ref-key">Krok 2</span><span class="ref-val p">crypto key generate rsa</span></div>
-      <div class="ref-item"><span class="ref-key">Krok 3</span><span class="ref-val p">transport input ssh (na liniach vty)</span></div>
-      <div class="ref-item"><span class="ref-key">+ lokalny user</span><span class="ref-val p">username ... secret ...</span></div>
+    <!-- ===================== HISTORY SCREEN ===================== -->
+    <div class="screen" id="screen-history">
+      <div id="historyList"></div>
     </div>
 
   </div>
+
+</div>
+
+<div class="toast" id="toast"></div>
+
+<div class="sheet-backdrop" id="sheetBackdrop"></div>
+<div class="sheet" id="infoSheet">
+  <div class="sheet-handle"></div>
+  <h3>Talerze</h3>
+  <p>Mobilna wersja kalkulatora obciążenia sztangi. Oblicza talerze na jedną stronę dla sztangi 20&nbsp;kg oraz szacuje one rep max. Wyniki zapisują się lokalnie na tym urządzeniu.</p>
+  <p>Dodaj do ekranu głównego, aby uruchamiać jak zwykłą aplikację: w Safari/Chrome dotknij Udostępnij → „Dodaj do ekranu początkowego”.</p>
+  <p><a href="https://github.com/melamann00/weight_adder" target="_blank" rel="noopener">Repozytorium na GitHub ↗</a></p>
 </div>
 
 <script>
-const qaData = [
-  {n:"1", q:"Które dwa typy ruchu używają RTP?", a:"video, voice", type:"multi"},
-  {n:"2", q:"Technologia bezprzewodowa dla automatyki domowej (home automation)?", a:"ZigBee", type:""},
-  {n:"3", q:"Która warstwa TCP/IP wyznacza trasy przez sieć?", a:"Internet", type:""},
-  {n:"4", q:"Który serwer używa rekordów A, NS, AAAA, MX?", a:"DNS", type:""},
-  {n:"5", q:"Czym są protokoły własnościowe (proprietary)?", a:"Protokoły kontrolowane przez jedną org./firmę", type:""},
-  {n:"6", q:"Jaką usługę świadczy DNS?", a:"Tłumaczy domeny (np. cisco.com) na adresy IP", type:""},
-  {n:"7", q:"Port docelowy 110 → jaka usługa?", a:"POP3", type:"port"},
-  {n:"8", q:"Komenda Windows do wyświetlenia konfiguracji IP?", a:"ipconfig", type:"cmd"},
-  {n:"9", q:"Drukarka udostępniona na domowej sieci → model sieciowy?", a:"Peer-to-peer (P2P)", type:""},
-  {n:"10", q:"Co opisuje wirusa (virus)?", a:"Malicious software/code running on an end device", type:""},
-  {n:"11", q:"Priorytety QoS: audio conference, financial, web page?", a:"audio conference > financial transactions > web page", type:"multi"},
-  {n:"12", q:"Składniki adresu IPv6 global unicast?", a:"global routing prefix / subnet ID / interface ID", type:"multi"},
-  {n:"13", q:"Transfer pliku Host1→serwer: które warstwy TCP/IP?", a:"Application, Transport, Internet, Network Access", type:"multi"},
-  {n:"14", q:"Store-and-forward: co robi?", a:"Przechowuje całą ramkę, sprawdza CRC i długość ramki", type:""},
-  {n:"14b", q:"Cut-through: co robi?", a:"Małe opóźnienie; może przesyłać runt frames; zaczyna przy adresie docelowym", type:""},
-  {n:"15", q:"Default gateway dla hosta H1 (LAN podłączony do G0/0 R1)?", a:"R1: G0/0", type:""},
-  {n:"16", q:"Jaką usługę świadczy Internet Messenger?", a:"Real-time chatting among remote users", type:""},
-  {n:"18", q:"Który protokół buduje tabelę ARP (arp -a)?", a:"ARP", type:""},
-  {n:"19", q:"Dwa czynniki zakłócające kabel miedziany blisko fl. lamp?", a:"EMI, RFI", type:"multi"},
-  {n:"20", q:"Host→zdalna sieć, brak wpisu ARP: co wyśle?", a:"ARP request o MAC domyślnej bramy (default gateway)", type:""},
-  {n:"22", q:"Port docelowy 53 → jaka usługa?", a:"DNS", type:"port"},
-  {n:"23", q:"Najmniejsza maska dla 25 urządzeń?", a:"/27 → 255.255.255.224 (30 hostów)", type:"mask"},
-  {n:"24", q:"Co opisuje konia trojańskiego (Trojan horse)?", a:"Malicious software/code running on an end device (ukryty w legalnym programie)", type:""},
-  {n:"25", q:"Jaką usługę świadczy HTTPS?", a:"Szyfruje wymianę treści www (text, grafika, dźwięk, video)", type:""},
-  {n:"26", q:"Jak PC śledzi wiele sesji aplikacji jednocześnie?", a:"Źródłowy numer portu (source port number) unikalny dla każdej sesji", type:""},
-  {n:"27", q:"Najmniejsza maska dla 61 urządzeń?", a:"/26 → 255.255.255.192 (62 hosty)", type:"mask"},
-  {n:"29", q:"Co opisuje atak DoS?", a:"Spowalnia lub crashuje urządzenie/usługę sieciową", type:""},
-  {n:"31", q:"Jaką usługę świadczy SMTP?", a:"Wysyłanie e-mail klient→serwer pocztowy i między serwerami", type:""},
-  {n:"32", q:"Scenariusz z dwiema kartami przeglądarki → która warstwa?", a:"Transport – zapewnia dostarczenie danych do właściwej aplikacji/okna", type:""},
-  {n:"34", q:"Co oznacza 'atenuacja' (attenuation)?", a:"Utrata siły sygnału wraz ze wzrostem odległości", type:""},
-  {n:"35", q:"Błąd przy configure terminal w user EXEC mode?", a:"Należy najpierw wejść w privileged EXEC mode (komenda: enable)", type:""},
-  {n:"36", q:"Dwa protokoły na szczycie modelu TCP/IP (application layer)?", a:"DNS, POP", type:"multi"},
-  {n:"37", q:"Folder z prawami Read-Only/Edit per grupy → jakie AAA?", a:"Authorization (autoryzacja)", type:""},
-  {n:"38", q:"Trzy wymagania protokołów sieciowych dla transmisji?", a:"message encoding, message size, delivery options", type:"multi"},
-  {n:"39", q:"Dwie cechy protokołu IP?", a:"Bezpołączeniowy (nie wymaga połączenia E2E); niezależny od medium", type:"multi"},
-  {n:"40", q:"Trzy cechy sieci z opisanego scenariusza (login VPN, QoS video, ISP failover)?", a:"Security, Quality of Service (QoS), Fault Tolerance", type:"multi"},
-  {n:"41", q:"Dwie przyczyny degradacji sygnału UTP?", a:"Złe zakończenie (improper termination), niska jakość kabla/złącz", type:"multi"},
-  {n:"42", q:"Która podsieć zawiera 192.168.1.96 jako hosta?", a:"192.168.1.64/26 (zakres hostów .65–.126)", type:"mask"},
-  {n:"43", q:"Z traceroute do 192.168.100.1 → dwa poprawne wnioski?", a:"4 przeskoki (hops) między urządzeniami; istnieje łączność L3", type:"multi"},
-  {n:"44", q:"Dwa fakty o zbieraniu ruchu analizatorem protokołów?", a:"Zbieraj podczas szczytowego obciążenia; zbieraj na różnych segmentach sieci", type:"multi"},
-  {n:"45", q:"Efekt komendy 'ipv6 unicast-routing'?", a:"Interfejsy zaczynają wysyłać ICMPv6 Router Advertisement (RA) messages", type:""},
-  {n:"46", q:"Trzy warstwy OSI mapujące na TCP/IP Application layer?", a:"Application, Presentation, Session", type:"multi"},
-  {n:"47", q:"Co router R1 robi z nagłówkiem Ethernet od PC1 (routing do PC2)?", a:"Usuwa nagłówek L2 i tworzy nowy przed wysłaniem z interfejsu S0/0/0", type:""},
-  {n:"48", q:"Skutek błędnie skonfigurowanego default gateway na hoście?", a:"Host nie może komunikować się z hostami w innych sieciach", type:""},
-  {n:"49", q:"Dwie cechy ARP?", a:"Brak MAC → broadcast ARP; urządzenie z danym IP odpowiada unicastem", type:"multi"},
-  {n:"50", q:"Najmniejsza maska dla 90 urządzeń?", a:"/25 → 255.255.255.128 (126 hostów)", type:"mask"},
-  {n:"51", q:"Dwa komunikaty ICMPv6 nieistniejące w ICMPv4?", a:"Neighbor Solicitation, Router Advertisement", type:"multi"},
-  {n:"52", q:"Port docelowy 80 → jaka usługa?", a:"HTTP", type:"port"},
-  {n:"53", q:"Zaleta IMAP nad POP3 dla małej firmy?", a:"Wiadomości zostają na serwerze do momentu ręcznego usunięcia", type:""},
-  {n:"54", q:"Ping IP działa, ping URL nie → jakie narzędzie diagnostyczne?", a:"nslookup", type:"cmd"},
-  {n:"55", q:"Dwie funkcje podwarstwy LLC (OSI Data Link)?", a:"Identyfikuje protokół L3 w ramce; umożliwia IPv4 i IPv6 na tym samym medium", type:"multi"},
-  {n:"56", q:"Efekt 'ip default-gateway' na przełączniku?", a:"Przełącznik można zarządzać zdalnie z innej sieci", type:""},
-  {n:"57", q:"Efekt 'transport input ssh' na liniach vty?", a:"Komunikacja między przełącznikiem a użytkownikami jest szyfrowana", type:""},
-  {n:"59", q:"Użycie darmowych narzędzi wireless do zbierania info o sieci → atak?", a:"Reconnaissance (rozpoznanie)", type:""},
-  {n:"60", q:"Jaką usługę świadczy HTTP?", a:"Podstawowe zasady wymiany tekstu, grafiki, dźwięku, video w sieci web", type:""},
-  {n:"61", q:"Port docelowy 67 → jaka usługa?", a:"DHCP (server)", type:"port"},
-  {n:"62", q:"Dwa problemy przy dużej liczbie wiadomości ARP?", a:"Broadcast zalewa całą podsieć; wszystkie węzły muszą przetworzyć ARP request", type:"multi"},
-  {n:"63", q:"Trzy komendy Windows do troubleshootingu IP/DNS/bramy?", a:"ping, ipconfig, nslookup", type:"multi cmd"},
-  {n:"64", q:"Co router robi po dopasowaniu IP do directly connected route?", a:"Przełącza pakiet bezpośrednio na ten interfejs (switch to directly connected interface)", type:""},
-  {n:"65", q:"Co opisuje antispyware?", a:"Aplikacje chroniące urządzenia końcowe przed złośliwym oprogramowaniem", type:""},
-  {n:"66", q:"Metoda zdalnego CLI zapewniająca prywatność hasła i sesji?", a:"SSH (Secure Shell)", type:""},
-  {n:"67", q:"Dwa najskuteczniejsze sposoby ochrony przed malware?", a:"Aktualizuj OS i oprogramowanie; zainstaluj i aktualizuj antywirusa", type:"multi"},
-  {n:"68", q:"Add-on do arkusza kalkulacyjnego wyłącza firewall → jaki typ zagrożenia?", a:"Trojan horse", type:""},
-  {n:"69", q:"Pole ramki tworzone przez nadawcę do wykrywania błędów?", a:"Frame Check Sequence (FCS)", type:""},
-  {n:"70", q:"Najmniejsza maska dla 4 urządzeń?", a:"/29 → 255.255.255.248 (6 hostów)", type:"mask"},
-  {n:"71", q:"Jaką usługę świadczy POP3?", a:"Pobiera e-mail z serwera, ściągając go do lokalnej aplikacji pocztowej", type:""},
-  {n:"72", q:"Dwa rozwiązania bezpieczeństwa typowe tylko dla środowisk korporacyjnych?", a:"VPN (Virtual Private Networks), IPS (Intrusion Prevention Systems)", type:"multi"},
-  {n:"73", q:"Co opisuje oprogramowanie antywirusowe?", a:"Aplikacje chroniące urządzenia końcowe przed złośliwym oprogramowaniem", type:""},
-  {n:"74", q:"Jak router zapobiega nieskończonemu krążeniu pakietu IPv4?", a:"Dekrementuje TTL o 1; jeśli wynik = 0 → odrzuca pakiet + wysyła ICMP Time Exceeded", type:""},
-  {n:"75", q:"Port docelowy 69 → jaka usługa?", a:"TFTP", type:"port"},
-  {n:"76", q:"Trzy dodatkowe kroki konfiguracji SSH (user account już jest)?", a:"ip domain-name; crypto key generate rsa; transport input ssh (na vty)", type:"multi cmd"},
-  {n:"77", q:"Dwie funkcje podwarstwy MAC (OSI Data Link)?", a:"Ramkowanie (frame delimiting); wykrywanie błędów (FCS trailer)", type:"multi"},
-  {n:"78", q:"Pakiet IPv6 z adresem docelowym FF02::2 trafia do?", a:"Wszystkich routerów IPv6 na lokalnym linku", type:""},
-  {n:"79", q:"Trzy części adresu IPv6 global unicast?", a:"Global routing prefix, Subnet ID, Interface ID", type:"multi"},
-  {n:"80", q:"Trzy obszary problemowe sieci bezprzewodowej?", a:"Interference (zakłócenia), Security (bezpieczeństwo), Coverage area (zasięg)", type:"multi"},
-  {n:"81", q:"Najszybszy sposób testowania bannera MOTD?", a:"Wyjdź z privileged EXEC (exit) i naciśnij Enter", type:"cmd"},
-  {n:"82", q:"Metoda zarządzania dostępem do medium w sieci bezprzewodowej?", a:"CSMA/CA", type:""},
-  {n:"83", q:"Funkcja warstwy Data Link (L2)?", a:"Zapewnia wymianę ramek między urządzeniami na wspólnym medium lokalnym", type:""},
-  {n:"84", q:"Cel TCP sliding window?", a:"Żąda od nadawcy zmniejszenia prędkości wysyłania danych", type:""},
-  {n:"85", q:"Co opisuje spyware?", a:"Oprogramowanie zainstalowane na urządzeniu, które zbiera info o użytkowniku", type:""},
-  {n:"86", q:"Która metoda przełączania odrzuca ramki z błędem FCS?", a:"Store-and-forward switching", type:""},
-  {n:"87", q:"Zakres adresów link-local IPv6?", a:"FE80::/10", type:""},
-  {n:"88", q:"Jaką usługę świadczy FTP?", a:"Transfer danych między klientem a serwerem plików (port 21 kontrola, 20 dane)", type:""},
-  {n:"89", q:"Dwie niezbędne konfiguracje do dostępu http://www.cisco.com?", a:"Adres serwera DNS, domyślna brama (default gateway)", type:"multi"},
-  {n:"90", q:"Dwie prawdziwe cechy NAT dla IPv4?", a:"Zwalnia wyczerpywanie adresów IPv4; powoduje problemy dla aplikacji E2E", type:"multi"},
-  {n:"91", q:"EUI-64 interface ID dla MAC 1C-6F-65-C2-BD-F8?", a:"1E6F:65FF:FEC2:BDF8", type:""},
-  {n:"92", q:"PC1 wysyła ARP request dla PC2 (ta sama sieć) → co się stanie?", a:"PC2 wyśle ARP reply ze swoim MAC address", type:""},
-  {n:"93", q:"Jaką usługę świadczy BOOTP?", a:"Pozwala stacji bez dysku odkryć własny IP i zlokalizować serwer BOOTP", type:""},
-  {n:"94", q:"Co opisuje adware?", a:"Oprogramowanie zainstalowane na urządzeniu, które zbiera info o użytkowniku", type:""},
-  {n:"95", q:"Gdy osiągnięty próg błędów w cut-through → na co przełącza się switch?", a:"Store-and-forward switching", type:""},
-  {n:"97", q:"Dwie główne odpowiedzialności podwarstwy MAC Ethernet?", a:"Dostęp do medium (accessing the media), enkapsulacja danych (data encapsulation)", type:"multi"},
-  {n:"98", q:"Trzy fakty z show ip interface brief (Vlan1 up/up, Fa0/0 up/up)?", a:"Zdefiniowany domyślny SVI; switchem można zdalnie zarządzać; jedno urządzenie podłączone", type:"multi"},
-  {n:"100", q:"Subnet ID dla 2001:DA48:FC5:A4:3D1B::1/64?", a:"2001:DA48:FC5:A4::/64", type:""},
-  {n:"101", q:"Firewall – dopasuj funkcję: port number / IP+MAC / unsolicited / URL?", a:"Port → application filtering; IP/MAC → packet filtering; niechciane → SPI; URL → URL filtering", type:"multi"},
-  {n:"102", q:"Użytkownicy zgłaszają opóźnienia auth w określonych godzinach → co sprawdzić?", a:"Baseline wydajności sieci (network performance baseline)", type:""},
-  {n:"103", q:"Efekt 'service password-encryption'?", a:"Szyfruje hasła przechowywane w pliku konfiguracyjnym routera/switcha", type:"cmd"},
-  {n:"104", q:"Dwie prawdziwe różnice/podobieństwa nagłówków IPv4 i IPv6?", a:"Pole Source Address zachowane; TTL → Hop Limit (ta sama rola)", type:"multi"},
-  {n:"105", q:"Jedna maska dla 4 podsieci (max 22 hosty w największej)?", a:"/27 → 255.255.255.224 (30 hostów)", type:"mask"},
-  {n:"106", q:"Co opisuje kradzież tożsamości (identity theft)?", a:"Użycie skradzionych danych uwierzytelniających do dostępu do prywatnych danych", type:""},
-  {n:"107", q:"Najmniejsza maska dla 200 urządzeń?", a:"/24 → 255.255.255.0 (254 hosty)", type:"mask"},
-  {n:"108", q:"Trzy standardy budowy i instalacji okablowania (TIA/EIA)?", a:"Długości kabli (cable lengths), typy złącz (connector types), pinouty", type:"multi"},
-  {n:"109", q:"Co jest złe na zdjęciu zakończenia UTP przy RJ-45?", a:"Odkręcony odcinek przewodu jest za długi (untwisted length too long)", type:""},
-  {n:"111", q:"Port docelowy 143 → jaka usługa?", a:"IMAP", type:"port"},
-  {n:"112", q:"Dwie cechy wspólne TCP i UDP?", a:"Numery portów (port numbering), suma kontrolna (checksum)", type:"multi"},
-  {n:"114", q:"Port docelowy 21 → jaka usługa?", a:"FTP (control connection)", type:"port"},
-  {n:"115", q:"Co z NIC umieszcza go na warstwie Data Link (OSI)?", a:"Adres MAC (Media Access Control address)", type:""},
-  {n:"116", q:"Najmniejsza maska dla 10 urządzeń?", a:"/28 → 255.255.255.240 (14 hostów)", type:"mask"},
-  {n:"117", q:"Technika UTP przeciw przesłuchom (crosstalk)?", a:"Skręcanie przewodów parami (twisting wires together into pairs)", type:""},
-  {n:"119", q:"Które hosty otrzymają ARP broadcast od hosta A (default GW)?", a:"Hosty B, C i router R1 (tylko urządzenia w tej samej podsieci)", type:"multi"},
-];
+(function(){
+  "use strict";
 
-function renderQA(data) {
-  const container = document.getElementById('qa-container');
-  const count = document.getElementById('count');
-  container.innerHTML = '';
-  count.textContent = `Wyświetlane: ${data.length} / ${qaData.length} pytań`;
-  data.forEach(item => {
-    const typeClass = item.type === 'multi' ? 'multi' :
-                      item.type === 'port' ? 'port' :
-                      item.type === 'mask' ? 'mask' :
-                      item.type.includes('cmd') ? 'cmd' : '';
-    container.innerHTML += `
-      <div class="qa" data-q="${item.q.toLowerCase()}" data-a="${item.a.toLowerCase()}">
-        <div class="qa-q"><span class="qnum">${item.n}</span>${item.q}</div>
-        <div class="qa-a ${typeClass}">✓ ${item.a}</div>
-      </div>`;
+  // ---------- Config (mirrors original app logic) ----------
+  var BAR_WEIGHT = 20;
+  var PLATES = [25, 20, 15, 10, 5, 2.5, 1.25, 0.5, 0.25];
+  var PLATE_COLOR_VAR = {
+    25: '--plate-25', 20: '--plate-20', 15: '--plate-15', 10: '--plate-10',
+    5: '--plate-5', 2.5: '--plate-2_5', 1.25: '--plate-1_25', 0.5: '--plate-0_5', 0.25: '--plate-0_25'
+  };
+  // relative visual sizing (height px, thickness px) — heavier plates are bigger, matches real plate geometry
+  var PLATE_SIZE = {
+    25:   {h: 108, w: 20},
+    20:   {h: 98,  w: 18},
+    15:   {h: 88,  w: 16},
+    10:   {h: 76,  w: 14},
+    5:    {h: 62,  w: 11},
+    2.5:  {h: 52,  w: 9},
+    1.25: {h: 44,  w: 8},
+    0.5:  {h: 36,  w: 7},
+    0.25: {h: 30,  w: 6}
+  };
+
+  var STORAGE_KEY = 'talerze_history_v1';
+
+  // ---------- Storage (localStorage — this is a standalone static page, not a Claude artifact) ----------
+  function loadHistory() {
+    try {
+      var raw = localStorage.getItem(STORAGE_KEY);
+      return raw ? JSON.parse(raw) : [];
+    } catch(e) { return []; }
+  }
+  function saveHistory(list) {
+    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(list)); } catch(e) {}
+  }
+  var history = loadHistory();
+
+  // ---------- Core calculation logic (ported 1:1 from the Python app) ----------
+  function strengthCalculator(weight, reps) {
+    var brzycki = weight / (1.0278 - 0.0278 * reps);
+    var epley = weight * (1 + 0.0333 * reps);
+    var oconner = weight * (1 + (0.025 * reps));
+    return Math.round(((brzycki + epley + oconner) / 3) * 100) / 100;
+  }
+
+  function calculatePlates(wanted) {
+    // returns {error, message, loaded: []}
+    if (isNaN(wanted)) return {error: true, message: 'Podaj poprawną liczbę.'};
+    if (wanted < BAR_WEIGHT) return {error: true, message: 'Ciężar musi być większy lub równy 20 kg.'};
+    if (wanted > 700) return {error: true, message: 'Podano zbyt duży ciężar.'};
+    if (wanted === BAR_WEIGHT) return {error: false, empty: true, loaded: []};
+
+    var weightPerSide = (wanted - BAR_WEIGHT) / 2;
+    var loaded = [];
+    for (var i = 0; i < PLATES.length; i++) {
+      var w = PLATES[i];
+      while (weightPerSide - w >= -0.001) {
+        if (weightPerSide - w < -0.001) break;
+        loaded.push(w);
+        weightPerSide -= w;
+      }
+    }
+    if (weightPerSide > 0.001) {
+      return {error: false, exact: false, loaded: []};
+    }
+    return {error: false, exact: true, loaded: loaded, perSide: (wanted - BAR_WEIGHT) / 2};
+  }
+
+  // ---------- Tabs ----------
+  var tabs = document.querySelectorAll('.tab');
+  var screens = document.querySelectorAll('.screen');
+  tabs.forEach(function(tab){
+    tab.addEventListener('click', function(){
+      tabs.forEach(function(t){ t.classList.remove('active'); });
+      screens.forEach(function(s){ s.classList.remove('active'); });
+      tab.classList.add('active');
+      document.getElementById('screen-' + tab.dataset.tab).classList.add('active');
+      if (tab.dataset.tab === 'history') renderHistory();
+    });
   });
-}
 
-function filterQA() {
-  const val = document.getElementById('searchbar').value.toLowerCase().trim();
-  if (!val) { renderQA(qaData); return; }
-  const filtered = qaData.filter(i =>
-    i.q.toLowerCase().includes(val) ||
-    i.a.toLowerCase().includes(val) ||
-    i.n.includes(val)
-  );
-  renderQA(filtered);
-}
+  // ---------- Toast ----------
+  var toastEl = document.getElementById('toast');
+  var toastTimer = null;
+  function toast(msg) {
+    toastEl.textContent = msg;
+    toastEl.classList.add('show');
+    if (toastTimer) clearTimeout(toastTimer);
+    toastTimer = setTimeout(function(){ toastEl.classList.remove('show'); }, 1900);
+  }
 
-function showTab(name) {
-  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
-  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-  document.getElementById('tab-' + name).classList.add('active');
-  event.target.classList.add('active');
-}
+  // ---------- Info sheet ----------
+  var infoBtn = document.getElementById('infoBtn');
+  var sheet = document.getElementById('infoSheet');
+  var backdrop = document.getElementById('sheetBackdrop');
+  function openSheet(){ sheet.classList.add('show'); backdrop.classList.add('show'); }
+  function closeSheet(){ sheet.classList.remove('show'); backdrop.classList.remove('show'); }
+  infoBtn.addEventListener('click', openSheet);
+  backdrop.addEventListener('click', closeSheet);
 
-renderQA(qaData);
+  // ---------- Legend ----------
+  var legendEl = document.getElementById('legend');
+  PLATES.forEach(function(w){
+    var item = document.createElement('div');
+    item.className = 'legend-item';
+    var swatch = document.createElement('span');
+    swatch.className = 'swatch';
+    swatch.style.width = '10px';
+    swatch.style.height = '10px';
+    swatch.style.background = 'var(' + PLATE_COLOR_VAR[w] + ')';
+    swatch.style.border = '1px solid #4a4a4a';
+    item.appendChild(swatch);
+    var label = document.createElement('span');
+    label.textContent = w + ' kg';
+    item.appendChild(label);
+    legendEl.appendChild(item);
+  });
+
+  // ---------- Plates screen wiring ----------
+  var plateInput = document.getElementById('plateInput');
+  var barbellWrap = document.getElementById('barbellWrap');
+  var barbellEl = document.getElementById('barbell');
+  var emptyRig = document.getElementById('emptyRig');
+  var readout = document.getElementById('readout');
+  var readoutNum = document.getElementById('readoutNum');
+  var readoutPerSide = document.getElementById('readoutPerSide');
+  var plateResultWrap = document.getElementById('plateResultWrap');
+
+  var lastPlateResult = null; // {wanted, loaded}
+
+  function renderBarbell(loaded) {
+    barbellEl.innerHTML = '';
+
+    var sleeveL = document.createElement('div'); sleeveL.className = 'sleeve';
+    var shaftL = document.createElement('div'); shaftL.className = 'bar-shaft'; shaftL.style.width = '54px';
+    var platesL = document.createElement('div'); platesL.className = 'plates-side';
+    var shaftC = document.createElement('div'); shaftC.className = 'bar-shaft'; shaftC.style.width = '30px';
+    var platesR = document.createElement('div'); platesR.className = 'plates-side'; platesR.style.flexDirection = 'row';
+    var shaftR = document.createElement('div'); shaftR.className = 'bar-shaft'; shaftR.style.width = '54px';
+    var sleeveR = document.createElement('div'); sleeveR.className = 'sleeve';
+
+    loaded.forEach(function(w, idx){
+      [platesL, platesR].forEach(function(side, sideIdx){
+        var p = document.createElement('div');
+        p.className = 'plate';
+        var size = PLATE_SIZE[w];
+        p.style.height = size.h + 'px';
+        p.style.width = size.w + 'px';
+        p.style.background = 'var(' + PLATE_COLOR_VAR[w] + ')';
+        if (w <= 2.5) p.style.border = '1px solid #4a4a4a';
+        p.style.animationDelay = (idx * 0.035) + 's';
+        side.appendChild(p);
+      });
+    });
+
+    barbellEl.appendChild(sleeveL);
+    barbellEl.appendChild(shaftL);
+    barbellEl.appendChild(platesL);
+    barbellEl.appendChild(shaftC);
+    barbellEl.appendChild(platesR);
+    barbellEl.appendChild(shaftR);
+    barbellEl.appendChild(sleeveR);
+  }
+
+  function renderPlateResult() {
+    var raw = plateInput.value.trim();
+    if (!raw) {
+      emptyRig.style.display = 'flex';
+      barbellEl.style.display = 'none';
+      readout.style.display = 'none';
+      plateResultWrap.innerHTML = '';
+      lastPlateResult = null;
+      return;
+    }
+
+    var wanted = parseFloat(raw);
+    var res = calculatePlates(wanted);
+
+    if (res.error) {
+      emptyRig.style.display = 'flex';
+      barbellEl.style.display = 'none';
+      readout.style.display = 'none';
+      plateResultWrap.innerHTML = '<div class="msg error">' + res.message + '</div>';
+      lastPlateResult = null;
+      return;
+    }
+
+    if (res.empty) {
+      emptyRig.style.display = 'none';
+      barbellEl.style.display = 'flex';
+      renderBarbell([]);
+      readout.style.display = 'block';
+      readoutNum.textContent = wanted;
+      readoutPerSide.textContent = 'Sama sztanga — brak talerzy do załadowania';
+      plateResultWrap.innerHTML = '';
+      lastPlateResult = {wanted: wanted, loaded: []};
+      return;
+    }
+
+    if (!res.exact) {
+      emptyRig.style.display = 'flex';
+      barbellEl.style.display = 'none';
+      readout.style.display = 'none';
+      plateResultWrap.innerHTML = '<div class="msg error">Nie można dokładnie załadować takiego ciężaru dostępnymi talerzami.</div>';
+      lastPlateResult = null;
+      return;
+    }
+
+    emptyRig.style.display = 'none';
+    barbellEl.style.display = 'flex';
+    renderBarbell(res.loaded);
+    readout.style.display = 'block';
+    readoutNum.textContent = wanted;
+    readoutPerSide.textContent = res.perSide + ' kg na stronę';
+
+    // grouped plate list (count per weight)
+    var counts = {};
+    res.loaded.forEach(function(w){ counts[w] = (counts[w] || 0) + 1; });
+    var order = PLATES.filter(function(w){ return counts[w]; });
+    var html = '<div class="plate-list">';
+    order.forEach(function(w){
+      html += '<div class="plate-row"><span class="swatch-label"><span class="swatch" style="background:var(' + PLATE_COLOR_VAR[w] + ');' + (w<=2.5?'border:1px solid #4a4a4a;':'') + '"></span>' + w + ' kg</span><span class="count">× ' + counts[w] + '</span></div>';
+    });
+    html += '</div>';
+    plateResultWrap.innerHTML = html;
+
+    lastPlateResult = {wanted: wanted, loaded: res.loaded};
+  }
+
+  plateInput.addEventListener('input', renderPlateResult);
+
+  document.querySelectorAll('[data-add-weight]').forEach(function(chip){
+    chip.addEventListener('click', function(){
+      plateInput.value = chip.dataset.addWeight;
+      renderPlateResult();
+    });
+  });
+
+  document.getElementById('clearPlateBtn').addEventListener('click', function(){
+    plateInput.value = '';
+    renderPlateResult();
+  });
+
+  document.getElementById('savePlateBtn').addEventListener('click', function(){
+    if (!lastPlateResult) { toast('Brak wyniku do zapisania'); return; }
+    history.unshift({
+      type: 'plates',
+      weight: lastPlateResult.wanted,
+      detail: lastPlateResult.loaded.length ? lastPlateResult.loaded.join(' | ') + ' kg / stronę' : 'sama sztanga',
+      ts: Date.now()
+    });
+    saveHistory(history);
+    toast('Zapisano wynik');
+  });
+
+  // ---------- ORM screen wiring ----------
+  var ormWeightInput = document.getElementById('ormWeightInput');
+  var ormRepsInput = document.getElementById('ormRepsInput');
+  var ormNum = document.getElementById('ormNum');
+  var ormUnit = document.getElementById('ormUnit');
+  var ormSub = document.getElementById('ormSub');
+  var lastOrm = null;
+
+  function renderOrm() {
+    var w = parseFloat(ormWeightInput.value);
+    var r = parseInt(ormRepsInput.value, 10);
+    if (!ormWeightInput.value.trim() || !ormRepsInput.value.trim()) {
+      ormNum.textContent = '—';
+      ormUnit.textContent = '';
+      ormSub.textContent = 'Wpisz ciężar i liczbę powtórzeń';
+      lastOrm = null;
+      return;
+    }
+    if (isNaN(w) || isNaN(r) || r <= 0 || w <= 0) {
+      ormNum.textContent = '—';
+      ormUnit.textContent = '';
+      ormSub.textContent = 'Podaj poprawne wartości';
+      lastOrm = null;
+      return;
+    }
+    var orm = strengthCalculator(w, r);
+    ormNum.textContent = orm;
+    ormUnit.textContent = 'kg';
+    ormSub.textContent = 'na podstawie ' + w + ' kg × ' + r + ' powt.';
+    lastOrm = {orm: orm, weight: w, reps: r};
+  }
+
+  ormWeightInput.addEventListener('input', renderOrm);
+  ormRepsInput.addEventListener('input', renderOrm);
+
+  document.getElementById('clearOrmBtn').addEventListener('click', function(){
+    ormWeightInput.value = '';
+    ormRepsInput.value = '';
+    renderOrm();
+  });
+
+  document.getElementById('saveOrmBtn').addEventListener('click', function(){
+    if (!lastOrm) { toast('Brak wyniku do zapisania'); return; }
+    history.unshift({
+      type: 'orm',
+      weight: lastOrm.orm,
+      detail: lastOrm.weight + ' kg × ' + lastOrm.reps + ' powt.',
+      ts: Date.now()
+    });
+    saveHistory(history);
+    toast('Zapisano wynik');
+  });
+
+  // ---------- History screen ----------
+  var historyList = document.getElementById('historyList');
+  function fmtTime(ts) {
+    var d = new Date(ts);
+    return d.toLocaleDateString('pl-PL', {day:'2-digit', month:'2-digit'}) + ' ' + d.toLocaleTimeString('pl-PL', {hour:'2-digit', minute:'2-digit'});
+  }
+  function renderHistory() {
+    if (!history.length) {
+      historyList.innerHTML = '<div class="empty-state">Brak zapisanych wyników.<br>Zapisz obliczenie z zakładki Talerze lub One Rep Max.</div>';
+      return;
+    }
+    var html = '';
+    history.forEach(function(item, idx){
+      var label = item.type === 'plates' ? item.weight + ' kg' : item.weight + ' kg (1RM)';
+      html += '<div class="history-item"><div class="h-main"><div class="h-weight">' + label + '</div><div class="h-detail">' + item.detail + '</div></div><div class="h-time">' + fmtTime(item.ts) + '</div></div>';
+    });
+    historyList.innerHTML = html;
+  }
+
+  // ---------- init ----------
+  renderPlateResult();
+  renderOrm();
+})();
 </script>
+
 </body>
 </html>
