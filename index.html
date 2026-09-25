@@ -2,993 +2,393 @@
 <html lang="pl">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-<meta name="theme-color" content="#121212">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="Talerze">
-<title>Kalkulator talerzy</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Przelicznik trunków</title>
 <style>
-  @font-face {
-    font-family: 'JetBrains Mono';
-    src: local('JetBrains Mono');
-  }
-
   :root {
-    --bg: #121212;
-    --bg-raised: #1a1a1a;
-    --bg-card: #1e1e1e;
-    --line: #2c2c2c;
-    --text: #f2f0eb;
-    --text-dim: #8a8a8a;
-    --text-faint: #5a5a5a;
-    --accent: #e8542e;
-    --accent-dim: #7a2e1c;
-    --plate-25: #d13b3b;
-    --plate-20: #2b6fd1;
-    --plate-15: #d1b62b;
-    --plate-10: #2fa356;
-    --plate-5: #e8e6df;
-    --plate-2_5: #1a1a1a;
-    --plate-1_25: #8a8a8a;
-    --plate-0_5: #5a5a5a;
-    --plate-0_25: #3a3a3a;
-    --safe-top: env(safe-area-inset-top, 0px);
-    --safe-bottom: env(safe-area-inset-bottom, 0px);
+    padding-top: env(safe-area-inset-top, 0px);
+    padding-bottom: env(safe-area-inset-bottom, 0px);
   }
-
-  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-
-  html, body {
-    margin: 0; padding: 0;
-    height: 100%;
-    background: var(--bg);
-    color: var(--text);
-    font-family: 'JetBrains Mono', 'SF Mono', Menlo, monospace;
-    overscroll-behavior: none;
-    user-select: none;
-    -webkit-user-select: none;
-  }
-
-  #app {
-    height: 100dvh;
-    display: flex;
-    flex-direction: column;
-    padding-top: var(--safe-top);
-    padding-bottom: var(--safe-bottom);
-    overflow: hidden;
-  }
-
-  /* ---------- Header ---------- */
-  header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 14px 20px 10px;
-    flex-shrink: 0;
-  }
-
-  .brand {
-    display: flex;
-    flex-direction: column;
-    gap: 2px;
-  }
-
-  .brand .mark {
-    font-size: 11px;
-    letter-spacing: 0.18em;
-    color: var(--accent);
-    font-weight: 700;
-    text-transform: uppercase;
-  }
-
-  .brand .sub {
-    font-size: 11px;
-    color: var(--text-faint);
-    letter-spacing: 0.02em;
-  }
-
-  .icon-btn {
-    width: 38px; height: 38px;
-    border-radius: 10px;
-    background: var(--bg-raised);
-    border: 1px solid var(--line);
-    display: flex; align-items: center; justify-content: center;
-    color: var(--text-dim);
-  }
-  .icon-btn:active { background: var(--line); }
-
-  /* ---------- Tabs ---------- */
-  .tabs {
-    display: flex;
-    gap: 6px;
-    padding: 4px 20px 16px;
-    flex-shrink: 0;
-  }
-
-  .tab {
-    flex: 1;
-    text-align: center;
-    padding: 10px 8px;
-    border-radius: 10px;
-    font-size: 12px;
-    letter-spacing: 0.04em;
-    color: var(--text-faint);
-    border: 1px solid var(--line);
-    background: transparent;
-    font-family: inherit;
-    transition: color .15s, border-color .15s, background .15s;
-  }
-
-  .tab.active {
-    color: var(--bg);
-    background: var(--accent);
-    border-color: var(--accent);
-    font-weight: 700;
-  }
-
-  /* ---------- Scroll area ---------- */
-  .screens {
-    flex: 1;
-    overflow: hidden;
-    position: relative;
-  }
-
-  .screen {
-    position: absolute;
-    inset: 0;
-    overflow-y: auto;
-    padding: 0 20px 24px;
-    opacity: 0;
-    pointer-events: none;
-    transform: translateY(6px);
-    transition: opacity .18s ease, transform .18s ease;
-  }
-
-  .screen.active {
-    opacity: 1;
-    pointer-events: auto;
-    transform: translateY(0);
-  }
-
-  /* ---------- Barbell visualization ---------- */
-  .rig {
-    background: var(--bg-card);
-    border: 1px solid var(--line);
-    border-radius: 18px;
-    padding: 22px 16px 18px;
-    margin-bottom: 16px;
-  }
-
-  .rig-label {
-    font-size: 10px;
-    letter-spacing: 0.16em;
-    color: var(--text-faint);
-    text-transform: uppercase;
-    margin-bottom: 14px;
-  }
-
-  .barbell-wrap {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    height: 130px;
-    overflow-x: auto;
-    overflow-y: hidden;
-    padding: 0 4px;
-  }
-
-  .barbell-wrap::-webkit-scrollbar { display: none; }
-
-  .barbell {
-    display: flex;
-    align-items: center;
-    flex-shrink: 0;
-  }
-
-  .plates-side {
-    display: flex;
-    flex-direction: row-reverse;
-    align-items: center;
-  }
-
-  .sleeve {
-    width: 34px;
-    height: 14px;
-    background: linear-gradient(180deg, #6a6a6a, #3a3a3a);
-    flex-shrink: 0;
-  }
-
-  .bar-shaft {
-    width: 38px;
-    height: 7px;
-    background: linear-gradient(180deg, #8a8a8a, #4a4a4a);
-    flex-shrink: 0;
-  }
-
-  .plate {
-    border-radius: 4px;
-    flex-shrink: 0;
-    margin: 0 1px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    position: relative;
-    animation: dropIn .28s cubic-bezier(.2,.9,.3,1.2) backwards;
-  }
-
-  .plate::after {
-    content: '';
-    position: absolute;
-    inset: 6px;
-    border-radius: 50%;
-    background: var(--bg);
-    opacity: 0.85;
-  }
-
-  @keyframes dropIn {
-    from { transform: translateY(-14px); opacity: 0; }
-    to { transform: translateY(0); opacity: 1; }
-  }
-
-  .empty-rig {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    color: var(--text-faint);
-    font-size: 11px;
-  }
-
-  .weight-readout {
-    text-align: center;
-    margin-top: 16px;
-    padding-top: 14px;
-    border-top: 1px solid var(--line);
-  }
-
-  .weight-readout .num {
-    font-family: 'Inter', -apple-system, sans-serif;
-    font-size: 34px;
-    font-weight: 800;
-    letter-spacing: -0.02em;
-  }
-
-  .weight-readout .unit {
+  * { box-sizing: border-box; }
+  body {
+    font-family: 'Courier New', monospace;
+    background: #fff;
+    color: #000;
+    max-width: 560px;
+    margin: 32px auto;
+    padding: 0 16px 40px;
     font-size: 14px;
-    color: var(--text-dim);
-    margin-left: 4px;
-  }
-
-  .weight-readout .per-side {
-    font-size: 11px;
-    color: var(--text-faint);
-    margin-top: 3px;
-    letter-spacing: 0.02em;
-  }
-
-  /* ---------- Input card ---------- */
-  .card {
-    background: var(--bg-card);
-    border: 1px solid var(--line);
-    border-radius: 16px;
-    padding: 16px;
-    margin-bottom: 14px;
-  }
-
-  .field-label {
-    font-size: 10px;
-    letter-spacing: 0.14em;
-    color: var(--text-faint);
-    text-transform: uppercase;
-    margin-bottom: 8px;
-  }
-
-  .num-input {
-    width: 100%;
-    background: var(--bg-raised);
-    border: 1px solid var(--line);
-    border-radius: 12px;
-    padding: 14px 16px;
-    font-family: inherit;
-    font-size: 22px;
-    font-weight: 600;
-    color: var(--text);
-    outline: none;
-  }
-
-  .num-input:focus { border-color: var(--accent); }
-
-  .num-input::placeholder { color: var(--text-faint); font-weight: 400; }
-
-  /* Hide native number spinners — desktop mouse affordance, not useful on touch */
-  .num-input::-webkit-outer-spin-button,
-  .num-input::-webkit-inner-spin-button {
-    -webkit-appearance: none;
-    margin: 0;
-  }
-  .num-input[type=number] { -moz-appearance: textfield; }
-
-  .two-col {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 10px;
-  }
-
-  /* ---------- Quick chips ---------- */
-  .chips {
-    display: flex;
-    gap: 8px;
-    margin-top: 10px;
-    flex-wrap: wrap;
-  }
-
-  .chip {
-    padding: 7px 13px;
-    border-radius: 20px;
-    background: var(--bg-raised);
-    border: 1px solid var(--line);
-    color: var(--text-dim);
-    font-size: 12px;
-    font-family: inherit;
-  }
-  .chip:active { background: var(--line); }
-
-  /* ---------- Buttons ---------- */
-  .btn-primary {
-    width: 100%;
-    padding: 16px;
-    border-radius: 14px;
-    background: var(--accent);
-    color: #121212;
-    font-family: inherit;
-    font-size: 14px;
-    font-weight: 700;
-    letter-spacing: 0.04em;
-    text-transform: uppercase;
-    border: none;
-    margin-top: 4px;
-  }
-  .btn-primary:active { background: #c94623; }
-  .btn-primary:disabled { background: var(--line); color: var(--text-faint); }
-
-  .btn-row {
-    display: flex;
-    gap: 10px;
-    margin-top: 10px;
-  }
-
-  .btn-secondary {
-    flex: 1;
-    padding: 13px;
-    border-radius: 12px;
-    background: transparent;
-    border: 1px solid var(--line);
-    color: var(--text-dim);
-    font-family: inherit;
-    font-size: 12px;
-    font-weight: 600;
-    letter-spacing: 0.04em;
-    text-transform: uppercase;
-  }
-  .btn-secondary:active { background: var(--bg-raised); }
-  .btn-secondary.warn { color: var(--accent); border-color: var(--accent-dim); }
-
-  /* ---------- Result / plate list ---------- */
-  .plate-list {
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-    margin-top: 12px;
-  }
-
-  .plate-row {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 10px 12px;
-    background: var(--bg-raised);
-    border-radius: 10px;
-  }
-
-  .plate-row .swatch-label {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    font-size: 13px;
-  }
-
-  .swatch {
-    width: 16px; height: 16px;
-    border-radius: 4px;
-    flex-shrink: 0;
-  }
-
-  .plate-row .count {
-    font-size: 13px;
-    color: var(--text-dim);
-  }
-
-  .msg {
-    font-size: 12px;
-    color: var(--text-dim);
     line-height: 1.5;
-    padding: 12px 0 2px;
   }
-  .msg.error { color: var(--accent); }
+  h1 { font-size: 18px; margin: 0 0 4px; }
+  .sub { color: #555; margin: 0 0 20px; }
 
-  /* ---------- History ---------- */
-  .history-item {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 12px 14px;
-    background: var(--bg-card);
-    border: 1px solid var(--line);
-    border-radius: 12px;
-    margin-bottom: 8px;
+  fieldset {
+    border: 1px solid #000;
+    margin-bottom: 16px;
+    padding: 10px 12px 14px;
   }
+  legend { padding: 0 4px; font-weight: bold; }
 
-  .history-item .h-main {
-    display: flex;
-    flex-direction: column;
-    gap: 2px;
-  }
-
-  .history-item .h-weight {
+  label { display: block; margin-top: 10px; font-size: 13px; }
+  input, select {
+    font-family: 'Courier New', monospace;
     font-size: 16px;
-    font-weight: 700;
+    padding: 6px 4px;
+    border: 1px solid #000;
+    width: 100%;
+    margin-top: 2px;
+    background: #fff;
+    color: #000;
   }
+  .row { display: flex; gap: 10px; }
+  .row > div { flex: 1; }
 
-  .history-item .h-detail {
-    font-size: 11px;
-    color: var(--text-faint);
-  }
+  hr { border: none; border-top: 1px solid #000; margin: 18px 0; }
 
-  .history-item .h-time {
-    font-size: 10px;
-    color: var(--text-faint);
-    text-align: right;
-  }
+  .bar { white-space: pre; letter-spacing: 1px; }
 
-  .empty-state {
-    text-align: center;
-    padding: 40px 20px;
-    color: var(--text-faint);
-    font-size: 12px;
-    line-height: 1.6;
-  }
+  .result .big { font-size: 20px; font-weight: bold; margin: 4px 0; }
 
-  .section-title {
-    font-size: 10px;
-    letter-spacing: 0.14em;
-    color: var(--text-faint);
-    text-transform: uppercase;
-    margin: 20px 0 10px;
-  }
-  .section-title:first-child { margin-top: 4px; }
-
-  /* Legend */
-  .legend {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px 14px;
-    padding-top: 4px;
-  }
-  .legend-item {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    font-size: 10px;
-    color: var(--text-faint);
-  }
-
-  /* Toast */
-  .toast {
-    position: fixed;
-    left: 20px; right: 20px;
-    bottom: calc(24px + var(--safe-bottom));
-    background: var(--text);
-    color: var(--bg);
-    padding: 13px 18px;
-    border-radius: 12px;
+  .tabs { display: flex; gap: 8px; margin-bottom: 16px; }
+  .tab-btn {
+    font-family: 'Courier New', monospace;
     font-size: 13px;
-    font-weight: 600;
-    text-align: center;
-    transform: translateY(120px);
-    opacity: 0;
-    transition: transform .25s cubic-bezier(.2,.9,.3,1.1), opacity .25s;
-    z-index: 50;
-    pointer-events: none;
+    padding: 6px 10px;
+    border: 1px solid #000;
+    background: #fff;
+    color: #000;
+    cursor: pointer;
   }
-  .toast.show { transform: translateY(0); opacity: 1; }
+  .tab-btn.active { background: #000; color: #fff; }
+  .tab-content { display: none; }
+  .tab-content.active { display: block; }
 
-  /* Info sheet */
-  .sheet-backdrop {
-    position: fixed; inset: 0;
-    background: rgba(0,0,0,0.55);
-    opacity: 0;
-    pointer-events: none;
-    transition: opacity .2s;
-    z-index: 60;
-  }
-  .sheet-backdrop.show { opacity: 1; pointer-events: auto; }
+  .note { font-size: 12px; color: #555; }
 
-  .sheet {
-    position: fixed;
-    left: 0; right: 0; bottom: 0;
-    background: var(--bg-card);
-    border-top: 1px solid var(--line);
-    border-radius: 20px 20px 0 0;
-    padding: 8px 20px calc(28px + var(--safe-bottom));
-    transform: translateY(100%);
-    transition: transform .28s cubic-bezier(.2,.9,.3,1.05);
-    z-index: 61;
-  }
-  .sheet.show { transform: translateY(0); }
-
-  .sheet-handle {
-    width: 36px; height: 4px;
-    background: var(--line);
-    border-radius: 2px;
-    margin: 10px auto 18px;
+  footer {
+    margin-top: 24px;
+    padding-top: 12px;
+    border-top: 1px solid #000;
+    font-size: 12px;
+    color: #555;
   }
 
-  .sheet h3 { font-size: 15px; margin: 0 0 4px; }
-  .sheet p { font-size: 12.5px; color: var(--text-dim); line-height: 1.6; margin: 0 0 14px; }
-  .sheet a { color: var(--accent); text-decoration: none; }
-
-  ::-webkit-scrollbar { width: 0; }
+  @media (prefers-color-scheme: dark) {
+    body { background: #111; color: #eee; }
+    fieldset, input, select, hr { border-color: #eee; }
+    input, select { background: #111; color: #eee; }
+    .sub, footer, .note { color: #999; }
+    .tab-btn { background: #111; color: #eee; border-color: #eee; }
+    .tab-btn.active { background: #eee; color: #111; }
+  }
 </style>
 </head>
 <body>
+  <h1>Przelicznik trunków</h1>
+  <p class="sub">Piwo / wino / wódka — na podstawie czystego alkoholu.</p>
 
-<div id="app">
-
-  <header>
-    <div class="brand">
-      <div class="mark">Talerze</div>
-      <div class="sub">kalkulator obciążenia sztangi</div>
+  <fieldset>
+    <legend>Wypite</legend>
+    <label for="srcType">Trunek
+      <select id="srcType">
+        <option value="piwo" selected>Piwo</option>
+        <option value="wino">Wino</option>
+        <option value="wodka">Wódka</option>
+      </select>
+    </label>
+    <label for="srcVariety">Rodzaj
+      <select id="srcVariety"></select>
+    </label>
+    <div class="row">
+      <div>
+        <label for="srcCount">Liczba porcji
+          <input type="number" id="srcCount" min="0" step="0.5" value="5">
+        </label>
+      </div>
+      <div>
+        <label for="srcVolume">Pojemność (ml)
+          <input type="number" id="srcVolume" min="0" step="10" value="500">
+        </label>
+      </div>
     </div>
-    <button class="icon-btn" id="infoBtn" aria-label="Informacje">
-      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 16v-5"/><circle cx="12" cy="8.2" r="0.3" fill="currentColor" stroke-width="1.2"/></svg>
-    </button>
-  </header>
+    <label for="srcAbv">Moc (% ABV)
+      <input type="number" id="srcAbv" min="0" max="70" step="0.1" value="5.0">
+    </label>
+  </fieldset>
+
+  <div>czysty alkohol: <span id="pureAlcoholLabel">125,0 ml</span></div>
+  <div class="bar" id="bar">[####----------------]</div>
+  <hr>
 
   <div class="tabs">
-    <button class="tab active" data-tab="plates">Talerze</button>
-    <button class="tab" data-tab="orm">One Rep Max</button>
-    <button class="tab" data-tab="history">Historia</button>
+    <button type="button" class="tab-btn active" data-tab="converter">Przelicznik</button>
+    <button type="button" class="tab-btn" data-tab="promile">Promile</button>
   </div>
 
-  <div class="screens">
+  <div id="tab-converter" class="tab-content active">
+    <fieldset>
+      <legend>Odpowiednik w</legend>
+      <label for="dstType">Trunek
+        <select id="dstType">
+          <option value="piwo">Piwo</option>
+          <option value="wino">Wino</option>
+          <option value="wodka" selected>Wódka</option>
+        </select>
+      </label>
+      <label for="dstVariety">Rodzaj
+        <select id="dstVariety"></select>
+      </label>
+      <label for="dstVolume">Pojemność porcji (ml)
+        <input type="number" id="dstVolume" min="0" step="5" value="50">
+      </label>
+      <label for="dstAbv">Moc (% ABV)
+        <input type="number" id="dstAbv" min="0" max="70" step="0.1" value="40">
+      </label>
+    </fieldset>
 
-    <!-- ===================== PLATES SCREEN ===================== -->
-    <div class="screen active" id="screen-plates">
-
-      <div class="rig">
-        <div class="rig-label">Podgląd sztangi</div>
-        <div class="barbell-wrap" id="barbellWrap">
-          <div class="empty-rig" id="emptyRig">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="12" r="9"/><path d="M8 12h8"/></svg>
-            <span>Wpisz ciężar, aby zobaczyć obciążenie</span>
-          </div>
-          <div class="barbell" id="barbell" style="display:none"></div>
-        </div>
-        <div class="weight-readout" id="readout" style="display:none">
-          <div><span class="num" id="readoutNum">0</span><span class="unit">kg</span></div>
-          <div class="per-side" id="readoutPerSide"></div>
-        </div>
-      </div>
-
-      <div class="card">
-        <div class="field-label">Ciężar całkowity (kg)</div>
-        <input type="number" inputmode="decimal" class="num-input" id="plateInput" placeholder="np. 100" min="20" max="700" step="0.5">
-        <div class="chips">
-          <button class="chip" data-add-weight="60">60</button>
-          <button class="chip" data-add-weight="100">100</button>
-          <button class="chip" data-add-weight="140">140</button>
-          <button class="chip" data-add-weight="180">180</button>
-        </div>
-      </div>
-
-      <div id="plateResultWrap"></div>
-
-      <div class="btn-row">
-        <button class="btn-secondary" id="savePlateBtn">Zapisz wynik</button>
-        <button class="btn-secondary warn" id="clearPlateBtn">Wyczyść</button>
-      </div>
-
-      <div class="section-title">Legenda talerzy</div>
-      <div class="legend" id="legend"></div>
-
+    <div class="result">
+      <div>to tyle samo alkoholu, co:</div>
+      <div class="big" id="mainResult">313 ml wódki</div>
+      <div id="subResult">≈ 6,3 porcji po 50 ml (Czysta, 40%)</div>
     </div>
-
-    <!-- ===================== ORM SCREEN ===================== -->
-    <div class="screen" id="screen-orm">
-
-      <div class="rig">
-        <div class="rig-label">Szacowany maksymalny ciężar (1RM)</div>
-        <div class="weight-readout" style="border-top:none; padding-top:2px; margin-top:2px;">
-          <div><span class="num" id="ormNum">—</span><span class="unit" id="ormUnit"></span></div>
-          <div class="per-side" id="ormSub">Wpisz ciężar i liczbę powtórzeń</div>
-        </div>
-      </div>
-
-      <div class="card">
-        <div class="two-col">
-          <div>
-            <div class="field-label">Ciężar (kg)</div>
-            <input type="number" inputmode="decimal" class="num-input" id="ormWeightInput" placeholder="80">
-          </div>
-          <div>
-            <div class="field-label">Powtórzenia</div>
-            <input type="number" inputmode="numeric" class="num-input" id="ormRepsInput" placeholder="5">
-          </div>
-        </div>
-      </div>
-
-      <div class="btn-row">
-        <button class="btn-secondary" id="saveOrmBtn">Zapisz wynik</button>
-        <button class="btn-secondary warn" id="clearOrmBtn">Wyczyść</button>
-      </div>
-
-      <div class="msg">Średnia z trzech wzorów: Brzycki, Epley, O'Conner. Szacunek — traktuj jako punkt odniesienia, nie gwarancję.</div>
-
-    </div>
-
-    <!-- ===================== HISTORY SCREEN ===================== -->
-    <div class="screen" id="screen-history">
-      <div id="historyList"></div>
-    </div>
-
   </div>
 
-</div>
+  <div id="tab-promile" class="tab-content">
+    <fieldset>
+      <legend>Dane do wyliczenia</legend>
+      <div class="row">
+        <div>
+          <label for="bodyWeight">Waga ciała (kg)
+            <input type="number" id="bodyWeight" min="30" max="200" step="1" value="75">
+          </label>
+        </div>
+        <div>
+          <label for="sex">Płeć
+            <select id="sex">
+              <option value="0.68" selected>Mężczyzna</option>
+              <option value="0.55">Kobieta</option>
+            </select>
+          </label>
+        </div>
+      </div>
+      <div class="row">
+        <div>
+          <label for="hoursSince">Czas od wypicia (h)
+            <input type="number" id="hoursSince" min="0" max="24" step="0.25" value="1">
+          </label>
+        </div>
+        <div>
+          <label for="eliminationRate">Eliminacja (‰/h)
+            <input type="number" id="eliminationRate" min="0.05" max="0.3" step="0.01" value="0.15">
+          </label>
+        </div>
+      </div>
+    </fieldset>
 
-<div class="toast" id="toast"></div>
+    <div class="result">
+      <div>szacunkowe stężenie teraz:</div>
+      <div class="big" id="bacResult">0,00‰</div>
+      <div id="bacStatus">brak wykrywalnego alkoholu (wg wyliczenia)</div>
+    </div>
 
-<div class="sheet-backdrop" id="sheetBackdrop"></div>
-<div class="sheet" id="infoSheet">
-  <div class="sheet-handle"></div>
-  <h3>Talerze</h3>
-  <p>Mobilna wersja kalkulatora obciążenia sztangi. Oblicza talerze na jedną stronę dla sztangi 20&nbsp;kg oraz szacuje one rep max. Wyniki zapisują się lokalnie na tym urządzeniu.</p>
-  <p>Dodaj do ekranu głównego, aby uruchamiać jak zwykłą aplikację: w Safari/Chrome dotknij Udostępnij → „Dodaj do ekranu początkowego”.</p>
-  <p><a href="https://github.com/melamann00/weight_adder" target="_blank" rel="noopener">Repozytorium na GitHub ↗</a></p>
-</div>
+    <hr>
+    <p class="note">
+      Dopuszczalna norma dla kierowców w Polsce to <strong>0,2‰</strong>. 0,2–0,5‰ to "stan po użyciu alkoholu" (wykroczenie), powyżej 0,5‰ to "stan nietrzeźwości" (przestępstwo).<br><br>
+      To tylko orientacyjne wyliczenie wg wzoru Widmarka — realny poziom zależy też od jedzenia, zdrowia, tempa picia i indywidualnego metabolizmu, więc może się znacznie różnić. Jedyny w pełni bezpieczny wybór po alkoholu to nie prowadzić pojazdów w ogóle.
+    </p>
+  </div>
+
+  <footer>
+    Wynik jest orientacyjny, upewnij się o prawidłowo wybranej mocy alkoholu.
+    Made with love by:
+    <div style="margin-top:12px;">
+      <a href="https://github.com/melamann00" target="_blank" rel="noopener" aria-label="GitHub" style="color:inherit; text-decoration:none; display:inline-flex; align-items:center; gap:6px;">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8z"/></svg>
+        <span style="font-size:12px;">Jaś</span>
+      </a>
+    </div>
+    Pomysłodawca:
+    <div style="margin-top:12px;">
+      <a href="https://github.com/Ax3L-FN" target="_blank" rel="noopener" aria-label="GitHub" style="color:inherit; text-decoration:none; display:inline-flex; align-items:center; gap:6px;">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8z"/></svg>
+        <span style="font-size:12px;">Filipek</span>
+      </a>
+    </div>
+  </footer>
 
 <script>
-(function(){
-  "use strict";
-
-  // ---------- Config (mirrors original app logic) ----------
-  var BAR_WEIGHT = 20;
-  var PLATES = [25, 20, 15, 10, 5, 2.5, 1.25, 0.5, 0.25];
-  var PLATE_COLOR_VAR = {
-    25: '--plate-25', 20: '--plate-20', 15: '--plate-15', 10: '--plate-10',
-    5: '--plate-5', 2.5: '--plate-2_5', 1.25: '--plate-1_25', 0.5: '--plate-0_5', 0.25: '--plate-0_25'
+  const TYPES = {
+    piwo: {
+      label: 'Piwo', genitive: 'piwa', defaultVolume: 500,
+      varieties: [
+        {label:'Jasne pełne', abv:5.0},
+        {label:'Lager', abv:5.2},
+        {label:'Pszeniczne', abv:5.3},
+        {label:'IPA', abv:6.5},
+        {label:'Porter / stout', abv:7.0},
+        {label:'Bezalkoholowe', abv:0.5},
+      ]
+    },
+    wino: {
+      label: 'Wino', genitive: 'wina', defaultVolume: 150,
+      varieties: [
+        {label:'Wytrawne (czerwone/białe)', abv:12.5},
+        {label:'Półwytrawne', abv:11.0},
+        {label:'Musujące', abv:11.5},
+        {label:'Wzmacniane (porto, wermut)', abv:19.0},
+      ]
+    },
+    wodka: {
+      label: 'Wódka', genitive: 'wódki', defaultVolume: 50,
+      varieties: [
+        {label:'Czysta', abv:40.0},
+        {label:'Smakowa', abv:32.0},
+      ]
+    }
   };
-  // relative visual sizing (height px, thickness px) — heavier plates are bigger, matches real plate geometry
-  var PLATE_SIZE = {
-    25:   {h: 108, w: 20},
-    20:   {h: 98,  w: 18},
-    15:   {h: 88,  w: 16},
-    10:   {h: 76,  w: 14},
-    5:    {h: 62,  w: 11},
-    2.5:  {h: 52,  w: 9},
-    1.25: {h: 44,  w: 8},
-    0.5:  {h: 36,  w: 7},
-    0.25: {h: 30,  w: 6}
-  };
 
-  var STORAGE_KEY = 'talerze_history_v1';
+  const srcType = document.getElementById('srcType');
+  const srcVariety = document.getElementById('srcVariety');
+  const srcCount = document.getElementById('srcCount');
+  const srcVolume = document.getElementById('srcVolume');
+  const srcAbv = document.getElementById('srcAbv');
 
-  // ---------- Storage (localStorage — this is a standalone static page, not a Claude artifact) ----------
-  function loadHistory() {
-    try {
-      var raw = localStorage.getItem(STORAGE_KEY);
-      return raw ? JSON.parse(raw) : [];
-    } catch(e) { return []; }
-  }
-  function saveHistory(list) {
-    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(list)); } catch(e) {}
-  }
-  var history = loadHistory();
+  const dstType = document.getElementById('dstType');
+  const dstVariety = document.getElementById('dstVariety');
+  const dstVolume = document.getElementById('dstVolume');
+  const dstAbv = document.getElementById('dstAbv');
 
-  // ---------- Core calculation logic (ported 1:1 from the Python app) ----------
-  function strengthCalculator(weight, reps) {
-    var brzycki = weight / (1.0278 - 0.0278 * reps);
-    var epley = weight * (1 + 0.0333 * reps);
-    var oconner = weight * (1 + (0.025 * reps));
-    return Math.round(((brzycki + epley + oconner) / 3) * 100) / 100;
+  const pureAlcoholLabel = document.getElementById('pureAlcoholLabel');
+  const mainResult = document.getElementById('mainResult');
+  const subResult = document.getElementById('subResult');
+  const bar = document.getElementById('bar');
+
+  const bodyWeight = document.getElementById('bodyWeight');
+  const sexSelect = document.getElementById('sex');
+  const hoursSince = document.getElementById('hoursSince');
+  const eliminationRate = document.getElementById('eliminationRate');
+  const bacResult = document.getElementById('bacResult');
+  const bacStatus = document.getElementById('bacStatus');
+
+  let currentPureAlcoholMl = 0;
+
+  function fmt(n, decimals) {
+    return n.toLocaleString('pl-PL', { minimumFractionDigits: decimals, maximumFractionDigits: decimals });
   }
 
-  function calculatePlates(wanted) {
-    // returns {error, message, loaded: []}
-    if (isNaN(wanted)) return {error: true, message: 'Podaj poprawną liczbę.'};
-    if (wanted < BAR_WEIGHT) return {error: true, message: 'Ciężar musi być większy lub równy 20 kg.'};
-    if (wanted > 700) return {error: true, message: 'Podano zbyt duży ciężar.'};
-    if (wanted === BAR_WEIGHT) return {error: false, empty: true, loaded: []};
+  function populateVarieties(typeKey, select) {
+    select.innerHTML = '';
+    TYPES[typeKey].varieties.forEach((v, i) => {
+      const opt = document.createElement('option');
+      opt.value = i;
+      opt.textContent = v.label + ' (' + fmt(v.abv, 1) + '%)';
+      select.appendChild(opt);
+    });
+    const custom = document.createElement('option');
+    custom.value = 'custom';
+    custom.textContent = 'Własne...';
+    select.appendChild(custom);
+  }
 
-    var weightPerSide = (wanted - BAR_WEIGHT) / 2;
-    var loaded = [];
-    for (var i = 0; i < PLATES.length; i++) {
-      var w = PLATES[i];
-      while (weightPerSide - w >= -0.001) {
-        if (weightPerSide - w < -0.001) break;
-        loaded.push(w);
-        weightPerSide -= w;
-      }
+  function handleTypeChange(side) {
+    const typeSel = side === 'src' ? srcType : dstType;
+    const varietySel = side === 'src' ? srcVariety : dstVariety;
+    const volumeInput = side === 'src' ? srcVolume : dstVolume;
+    const abvInput = side === 'src' ? srcAbv : dstAbv;
+    const typeKey = typeSel.value;
+
+    populateVarieties(typeKey, varietySel);
+    varietySel.value = 0;
+    abvInput.value = TYPES[typeKey].varieties[0].abv;
+    volumeInput.value = TYPES[typeKey].defaultVolume;
+    recalc();
+  }
+
+  function handleVarietyChange(side) {
+    const typeSel = side === 'src' ? srcType : dstType;
+    const varietySel = side === 'src' ? srcVariety : dstVariety;
+    const abvInput = side === 'src' ? srcAbv : dstAbv;
+    if (varietySel.value !== 'custom') {
+      abvInput.value = TYPES[typeSel.value].varieties[varietySel.value].abv;
     }
-    if (weightPerSide > 0.001) {
-      return {error: false, exact: false, loaded: []};
-    }
-    return {error: false, exact: true, loaded: loaded, perSide: (wanted - BAR_WEIGHT) / 2};
+    recalc();
   }
 
-  // ---------- Tabs ----------
-  var tabs = document.querySelectorAll('.tab');
-  var screens = document.querySelectorAll('.screen');
-  tabs.forEach(function(tab){
-    tab.addEventListener('click', function(){
-      tabs.forEach(function(t){ t.classList.remove('active'); });
-      screens.forEach(function(s){ s.classList.remove('active'); });
-      tab.classList.add('active');
-      document.getElementById('screen-' + tab.dataset.tab).classList.add('active');
-      if (tab.dataset.tab === 'history') renderHistory();
+  srcType.addEventListener('change', () => handleTypeChange('src'));
+  dstType.addEventListener('change', () => handleTypeChange('dst'));
+  srcVariety.addEventListener('change', () => handleVarietyChange('src'));
+  dstVariety.addEventListener('change', () => handleVarietyChange('dst'));
+  [srcCount, srcVolume, srcAbv, dstVolume, dstAbv].forEach(el => el.addEventListener('input', recalc));
+  [bodyWeight, hoursSince, eliminationRate].forEach(el => el.addEventListener('input', recalcBac));
+  sexSelect.addEventListener('change', recalcBac);
+
+  document.querySelectorAll('.tab-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+      btn.classList.add('active');
+      document.getElementById('tab-' + btn.dataset.tab).classList.add('active');
     });
   });
 
-  // ---------- Toast ----------
-  var toastEl = document.getElementById('toast');
-  var toastTimer = null;
-  function toast(msg) {
-    toastEl.textContent = msg;
-    toastEl.classList.add('show');
-    if (toastTimer) clearTimeout(toastTimer);
-    toastTimer = setTimeout(function(){ toastEl.classList.remove('show'); }, 1900);
+  function recalc() {
+    const count = parseFloat(srcCount.value) || 0;
+    const sVol = parseFloat(srcVolume.value) || 0;
+    const sAbv = parseFloat(srcAbv.value) || 0;
+    const dVol = parseFloat(dstVolume.value) || 0;
+    const dAbv = parseFloat(dstAbv.value) || 0;
+
+    const pureAlcoholMl = count * sVol * (sAbv / 100);
+    currentPureAlcoholMl = pureAlcoholMl;
+
+    const totalDstMl = dAbv > 0 ? pureAlcoholMl / (dAbv / 100) : 0;
+    const dstCount = dVol > 0 ? totalDstMl / dVol : 0;
+
+    const dstTypeKey = dstType.value;
+    const dstVarietyLabel = dstVariety.value === 'custom'
+      ? 'własne'
+      : TYPES[dstTypeKey].varieties[dstVariety.value].label;
+
+    pureAlcoholLabel.textContent = fmt(pureAlcoholMl, 1) + ' ml';
+    mainResult.textContent = fmt(Math.round(totalDstMl), 0) + ' ml ' + TYPES[dstTypeKey].genitive;
+    subResult.textContent = '≈ ' + fmt(dstCount, 1) + ' porcji po ' + fmt(dVol, 0) + ' ml (' + dstVarietyLabel + ', ' + fmt(dAbv, 1) + '%)';
+
+    const barWidth = 20;
+    const filled = Math.max(0, Math.min(barWidth, Math.round((pureAlcoholMl / 300) * barWidth)));
+    bar.textContent = '[' + '#'.repeat(filled) + '-'.repeat(barWidth - filled) + ']';
+
+    recalcBac();
   }
 
-  // ---------- Info sheet ----------
-  var infoBtn = document.getElementById('infoBtn');
-  var sheet = document.getElementById('infoSheet');
-  var backdrop = document.getElementById('sheetBackdrop');
-  function openSheet(){ sheet.classList.add('show'); backdrop.classList.add('show'); }
-  function closeSheet(){ sheet.classList.remove('show'); backdrop.classList.remove('show'); }
-  infoBtn.addEventListener('click', openSheet);
-  backdrop.addEventListener('click', closeSheet);
+  function recalcBac() {
+    const weight = parseFloat(bodyWeight.value) || 0;
+    const r = parseFloat(sexSelect.value) || 0.68;
+    const t = parseFloat(hoursSince.value) || 0;
+    const beta = parseFloat(eliminationRate.value) || 0.15;
 
-  // ---------- Legend ----------
-  var legendEl = document.getElementById('legend');
-  PLATES.forEach(function(w){
-    var item = document.createElement('div');
-    item.className = 'legend-item';
-    var swatch = document.createElement('span');
-    swatch.className = 'swatch';
-    swatch.style.width = '10px';
-    swatch.style.height = '10px';
-    swatch.style.background = 'var(' + PLATE_COLOR_VAR[w] + ')';
-    swatch.style.border = '1px solid #4a4a4a';
-    item.appendChild(swatch);
-    var label = document.createElement('span');
-    label.textContent = w + ' kg';
-    item.appendChild(label);
-    legendEl.appendChild(item);
-  });
+    const alcoholGrams = currentPureAlcoholMl * 0.789;
+    let bac = weight > 0 ? (alcoholGrams / (weight * r)) - (beta * t) : 0;
+    bac = Math.max(0, bac);
 
-  // ---------- Plates screen wiring ----------
-  var plateInput = document.getElementById('plateInput');
-  var barbellWrap = document.getElementById('barbellWrap');
-  var barbellEl = document.getElementById('barbell');
-  var emptyRig = document.getElementById('emptyRig');
-  var readout = document.getElementById('readout');
-  var readoutNum = document.getElementById('readoutNum');
-  var readoutPerSide = document.getElementById('readoutPerSide');
-  var plateResultWrap = document.getElementById('plateResultWrap');
+    bacResult.textContent = fmt(bac, 2) + '‰';
 
-  var lastPlateResult = null; // {wanted, loaded}
-
-  function renderBarbell(loaded) {
-    barbellEl.innerHTML = '';
-
-    var sleeveL = document.createElement('div'); sleeveL.className = 'sleeve';
-    var shaftL = document.createElement('div'); shaftL.className = 'bar-shaft'; shaftL.style.width = '54px';
-    var platesL = document.createElement('div'); platesL.className = 'plates-side';
-    var shaftC = document.createElement('div'); shaftC.className = 'bar-shaft'; shaftC.style.width = '30px';
-    var platesR = document.createElement('div'); platesR.className = 'plates-side'; platesR.style.flexDirection = 'row';
-    var shaftR = document.createElement('div'); shaftR.className = 'bar-shaft'; shaftR.style.width = '54px';
-    var sleeveR = document.createElement('div'); sleeveR.className = 'sleeve';
-
-    loaded.forEach(function(w, idx){
-      [platesL, platesR].forEach(function(side, sideIdx){
-        var p = document.createElement('div');
-        p.className = 'plate';
-        var size = PLATE_SIZE[w];
-        p.style.height = size.h + 'px';
-        p.style.width = size.w + 'px';
-        p.style.background = 'var(' + PLATE_COLOR_VAR[w] + ')';
-        if (w <= 2.5) p.style.border = '1px solid #4a4a4a';
-        p.style.animationDelay = (idx * 0.035) + 's';
-        side.appendChild(p);
-      });
-    });
-
-    barbellEl.appendChild(sleeveL);
-    barbellEl.appendChild(shaftL);
-    barbellEl.appendChild(platesL);
-    barbellEl.appendChild(shaftC);
-    barbellEl.appendChild(platesR);
-    barbellEl.appendChild(shaftR);
-    barbellEl.appendChild(sleeveR);
+    if (bac === 0) {
+      bacStatus.textContent = 'brak wykrywalnego alkoholu (wg wyliczenia)';
+    } else if (bac < 0.2) {
+      bacStatus.textContent = 'poniżej dopuszczalnej normy (0,2‰)';
+    } else if (bac <= 0.5) {
+      bacStatus.textContent = 'powyżej normy — "stan po użyciu alkoholu" (wykroczenie)';
+    } else {
+      bacStatus.textContent = 'powyżej normy — "stan nietrzeźwości" (przestępstwo)';
+    }
   }
 
-  function renderPlateResult() {
-    var raw = plateInput.value.trim();
-    if (!raw) {
-      emptyRig.style.display = 'flex';
-      barbellEl.style.display = 'none';
-      readout.style.display = 'none';
-      plateResultWrap.innerHTML = '';
-      lastPlateResult = null;
-      return;
-    }
-
-    var wanted = parseFloat(raw);
-    var res = calculatePlates(wanted);
-
-    if (res.error) {
-      emptyRig.style.display = 'flex';
-      barbellEl.style.display = 'none';
-      readout.style.display = 'none';
-      plateResultWrap.innerHTML = '<div class="msg error">' + res.message + '</div>';
-      lastPlateResult = null;
-      return;
-    }
-
-    if (res.empty) {
-      emptyRig.style.display = 'none';
-      barbellEl.style.display = 'flex';
-      renderBarbell([]);
-      readout.style.display = 'block';
-      readoutNum.textContent = wanted;
-      readoutPerSide.textContent = 'Sama sztanga — brak talerzy do załadowania';
-      plateResultWrap.innerHTML = '';
-      lastPlateResult = {wanted: wanted, loaded: []};
-      return;
-    }
-
-    if (!res.exact) {
-      emptyRig.style.display = 'flex';
-      barbellEl.style.display = 'none';
-      readout.style.display = 'none';
-      plateResultWrap.innerHTML = '<div class="msg error">Nie można dokładnie załadować takiego ciężaru dostępnymi talerzami.</div>';
-      lastPlateResult = null;
-      return;
-    }
-
-    emptyRig.style.display = 'none';
-    barbellEl.style.display = 'flex';
-    renderBarbell(res.loaded);
-    readout.style.display = 'block';
-    readoutNum.textContent = wanted;
-    readoutPerSide.textContent = res.perSide + ' kg na stronę';
-
-    // grouped plate list (count per weight)
-    var counts = {};
-    res.loaded.forEach(function(w){ counts[w] = (counts[w] || 0) + 1; });
-    var order = PLATES.filter(function(w){ return counts[w]; });
-    var html = '<div class="plate-list">';
-    order.forEach(function(w){
-      html += '<div class="plate-row"><span class="swatch-label"><span class="swatch" style="background:var(' + PLATE_COLOR_VAR[w] + ');' + (w<=2.5?'border:1px solid #4a4a4a;':'') + '"></span>' + w + ' kg</span><span class="count">× ' + counts[w] + '</span></div>';
-    });
-    html += '</div>';
-    plateResultWrap.innerHTML = html;
-
-    lastPlateResult = {wanted: wanted, loaded: res.loaded};
-  }
-
-  plateInput.addEventListener('input', renderPlateResult);
-
-  document.querySelectorAll('[data-add-weight]').forEach(function(chip){
-    chip.addEventListener('click', function(){
-      plateInput.value = chip.dataset.addWeight;
-      renderPlateResult();
-    });
-  });
-
-  document.getElementById('clearPlateBtn').addEventListener('click', function(){
-    plateInput.value = '';
-    renderPlateResult();
-  });
-
-  document.getElementById('savePlateBtn').addEventListener('click', function(){
-    if (!lastPlateResult) { toast('Brak wyniku do zapisania'); return; }
-    history.unshift({
-      type: 'plates',
-      weight: lastPlateResult.wanted,
-      detail: lastPlateResult.loaded.length ? lastPlateResult.loaded.join(' | ') + ' kg / stronę' : 'sama sztanga',
-      ts: Date.now()
-    });
-    saveHistory(history);
-    toast('Zapisano wynik');
-  });
-
-  // ---------- ORM screen wiring ----------
-  var ormWeightInput = document.getElementById('ormWeightInput');
-  var ormRepsInput = document.getElementById('ormRepsInput');
-  var ormNum = document.getElementById('ormNum');
-  var ormUnit = document.getElementById('ormUnit');
-  var ormSub = document.getElementById('ormSub');
-  var lastOrm = null;
-
-  function renderOrm() {
-    var w = parseFloat(ormWeightInput.value);
-    var r = parseInt(ormRepsInput.value, 10);
-    if (!ormWeightInput.value.trim() || !ormRepsInput.value.trim()) {
-      ormNum.textContent = '—';
-      ormUnit.textContent = '';
-      ormSub.textContent = 'Wpisz ciężar i liczbę powtórzeń';
-      lastOrm = null;
-      return;
-    }
-    if (isNaN(w) || isNaN(r) || r <= 0 || w <= 0) {
-      ormNum.textContent = '—';
-      ormUnit.textContent = '';
-      ormSub.textContent = 'Podaj poprawne wartości';
-      lastOrm = null;
-      return;
-    }
-    var orm = strengthCalculator(w, r);
-    ormNum.textContent = orm;
-    ormUnit.textContent = 'kg';
-    ormSub.textContent = 'na podstawie ' + w + ' kg × ' + r + ' powt.';
-    lastOrm = {orm: orm, weight: w, reps: r};
-  }
-
-  ormWeightInput.addEventListener('input', renderOrm);
-  ormRepsInput.addEventListener('input', renderOrm);
-
-  document.getElementById('clearOrmBtn').addEventListener('click', function(){
-    ormWeightInput.value = '';
-    ormRepsInput.value = '';
-    renderOrm();
-  });
-
-  document.getElementById('saveOrmBtn').addEventListener('click', function(){
-    if (!lastOrm) { toast('Brak wyniku do zapisania'); return; }
-    history.unshift({
-      type: 'orm',
-      weight: lastOrm.orm,
-      detail: lastOrm.weight + ' kg × ' + lastOrm.reps + ' powt.',
-      ts: Date.now()
-    });
-    saveHistory(history);
-    toast('Zapisano wynik');
-  });
-
-  // ---------- History screen ----------
-  var historyList = document.getElementById('historyList');
-  function fmtTime(ts) {
-    var d = new Date(ts);
-    return d.toLocaleDateString('pl-PL', {day:'2-digit', month:'2-digit'}) + ' ' + d.toLocaleTimeString('pl-PL', {hour:'2-digit', minute:'2-digit'});
-  }
-  function renderHistory() {
-    if (!history.length) {
-      historyList.innerHTML = '<div class="empty-state">Brak zapisanych wyników.<br>Zapisz obliczenie z zakładki Talerze lub One Rep Max.</div>';
-      return;
-    }
-    var html = '';
-    history.forEach(function(item, idx){
-      var label = item.type === 'plates' ? item.weight + ' kg' : item.weight + ' kg (1RM)';
-      html += '<div class="history-item"><div class="h-main"><div class="h-weight">' + label + '</div><div class="h-detail">' + item.detail + '</div></div><div class="h-time">' + fmtTime(item.ts) + '</div></div>';
-    });
-    historyList.innerHTML = html;
-  }
-
-  // ---------- init ----------
-  renderPlateResult();
-  renderOrm();
-})();
+  populateVarieties('piwo', srcVariety);
+  srcVariety.value = 0;
+  populateVarieties('wodka', dstVariety);
+  dstVariety.value = 0;
+  recalc();
 </script>
-
 </body>
 </html>
